@@ -1,5 +1,5 @@
 import tflib as lib
-
+from sn import spectral_normed_weight
 import numpy as np
 import tensorflow as tf
 
@@ -17,15 +17,20 @@ def unset_weights_stdev():
     global _weights_stdev
     _weights_stdev = None
 
-def Conv2D(name, input_dim, output_dim, filter_size, inputs, he_init=True, mask_type=None, stride=1, weightnorm=None, biases=True, gain=1.):
+def Conv2D(name, input_dim, output_dim, filter_size, inputs, he_init=True, mask_type=None, stride=1, weightnorm=None, spectralnorm=None, update_collection = True, biases=True, gain=1.):
     """
     inputs: tensor of shape (batch size, num channels, height, width)
     mask_type: one of None, 'a', 'b'
 
     returns: tensor of shape (batch size, num channels, height, width)
     """
-    with tf.name_scope(name) as scope:
+    def scope_has_variables(scope):
+        return len(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=scope.name)) > 0
 
+    #with tf.name_scope(name) as scope:
+    with tf.variable_scope(name) as scope:
+        if scope_has_variables(scope):
+            scope.reuse_variables()
         if mask_type is not None:
             mask_type, mask_n_channels = mask_type
 
@@ -98,7 +103,8 @@ def Conv2D(name, input_dim, output_dim, filter_size, inputs, he_init=True, mask_
             with tf.name_scope('weightnorm') as scope:
                 norms = tf.sqrt(tf.reduce_sum(tf.square(filters), reduction_indices=[0,1,2]))
                 filters = filters * (target_norms / norms)
-
+        if spectralnorm:
+            filters = spectral_normed_weight(filters, update_collection=update_collection)
         if mask_type is not None:
             with tf.name_scope('filter_mask'):
                 filters = filters * mask

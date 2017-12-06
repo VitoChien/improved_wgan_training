@@ -10,9 +10,15 @@ import tflib.ops.conv2d
 import tflib.ops.batchnorm
 import tflib.save_images
 import tflib.cifar10
+import tflib.imagenet
 import tflib.inception_score
 import tflib.plot
+import tflib.ops.layernorm
 
+from keras.preprocessing.image import load_img
+
+import linecache
+import cv2
 import numpy as np
 import tensorflow as tf
 #import sklearn.datasets
@@ -25,7 +31,8 @@ locale.setlocale(locale.LC_ALL, '')
 # Download CIFAR-10 (Python version) at
 # https://www.cs.toronto.edu/~kriz/cifar.html and fill in the path to the
 # extracted files here!
-DATA_DIR = '/home/vito/DATASET/cifar10'
+#DATA_DIR = '/home/ishaan/data/cifar10'
+DATA_DIR = '/home/vito/DATASET/ILSVRC2015/'
 if len(DATA_DIR) == 0:
     raise Exception('Please specify path to data directory in gan_cifar.py!')
 
@@ -33,23 +40,28 @@ N_GPUS = 2
 if N_GPUS not in [1,2]:
     raise Exception('Only 1 or 2 GPUs supported!')
 
-BATCH_SIZE = 64 # Critic batch size
+BATCH_SIZE = 16 # Critic batch size
 GEN_BS_MULTIPLE = 2 # Generator batch size, as a multiple of BATCH_SIZE
 ITERS = 100000 # How many iterations to train for
 DIM_G = 128 # Generator dimensionality
 DIM_D = 128 # Critic dimensionality
 NORMALIZATION_G = True # Use batchnorm in generator?
-NORMALIZATION_D = False # Use batchnorm (or layernorm) in critic?
-OUTPUT_DIM = 3072 # Number of pixels in CIFAR10 (32*32*3)
+NORMALIZATION_D = True # Use batchnorm (or layernorm) in critic?
+#OUTPUT_DIM = 3072 # Number of pixels in CIFAR10 (32*32*3)
+OUTPUT_DIM = 49152 # Number of pixels in Imagenet (128*128*3)
 LR = 2e-4 # Initial learning rate
 DECAY = True # Whether to decay LR over learning
 N_CRITIC = 5 # Critic steps per generator steps
 INCEPTION_FREQUENCY = 1000 # How frequently to calculate Inception score
 
 CONDITIONAL = True # Whether to train a conditional or unconditional model
-ACGAN = True # If CONDITIONAL, whether to use ACGAN or "vanilla" conditioning
+spectral_normed = True
+conditional_instance_normed = True
+ACGAN = False # If CONDITIONAL, whether to use ACGAN or "vanilla" conditioning
 ACGAN_SCALE = 1. # How to scale the critic's ACGAN loss relative to WGAN loss
 ACGAN_SCALE_G = 0.1 # How to scale generator's ACGAN loss relative to WGAN loss
+#pixel_means = np.array([103.939, 116.779, 123.68])
+pixel_means = np.array([127.5, 127.5, 127.5])
 
 if CONDITIONAL and (not ACGAN) and (not NORMALIZATION_D):
     print "WARNING! Conditional model without normalization in D might be effectively unconditional!"
@@ -58,12 +70,14 @@ DEVICES = ['/gpu:{}'.format(i) for i in xrange(N_GPUS)]
 if len(DEVICES) == 1: # Hack because the code assumes 2 GPUs
     DEVICES = [DEVICES[0], DEVICES[0]]
 
+DEVICES = ['/gpu:0','/gpu:3']
+
 lib.print_model_settings(locals().copy())
 
 def nonlinearity(x):
     return tf.nn.relu(x)
 
-def Normalize(name, inputs,labels=None):
+def Normalize(name, inputs,labels=None,is_training=True):
     """This is messy, but basically it chooses between batchnorm, layernorm, 
     their conditional variants, or nothing, depending on the value of `name` and
     the global hyperparam flags."""
@@ -73,6 +87,24 @@ def Normalize(name, inputs,labels=None):
         labels = None
 
     if ('Discriminator' in name) and NORMALIZATION_D:
+        """
+        if conditional_instance_normed:
+            return lib.ops.cond_batchnorm.Batchnorm(name, [1, 2, 3], inputs, labels=labels, n_labels=1000,is_training=is_training)
+        else:
+            return lib.ops.layernorm.Layernorm(name,[1,2,3],inputs,labels=labels,n_labels=10)
+        """
+        return lib.ops.layernorm.Layernorm(name,[1,2,3],inputs)
+    elif ('Generator' in name) and NORMALIZATION_G:
+        if labels is not None:
+            #print("##################################################")
+            return lib.ops.cond_batchnorm.Batchnorm(name,[0,2,3],inputs,labels=labels,n_labels=1000)
+        else:
+            return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
+    else:
+        return inputs
+
+    """
+    if ('Discriminator' in name) and NORMALIZATION_D:
         return lib.ops.layernorm.Layernorm(name,[1,2,3],inputs,labels=labels,n_labels=10)
     elif ('Generator' in name) and NORMALIZATION_G:
         if labels is not None:
@@ -81,16 +113,19 @@ def Normalize(name, inputs,labels=None):
             return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
     else:
         return inputs
+    """
 
 def ConvMeanPool(name, input_dim, output_dim, filter_size, inputs, he_init=True, biases=True):
-    output = lib.ops.conv2d.Conv2D(name, input_dim, output_dim, filter_size, inputs, he_init=he_init, biases=biases)
+    output = lib.ops.conv2d.Conv2D(name, input_dim, output_dim, filter_size, inputs, he_init=he_init, biases=biases,\
+        spectralnorm = True, update_collection = True)
     output = tf.add_n([output[:,:,::2,::2], output[:,:,1::2,::2], output[:,:,::2,1::2], output[:,:,1::2,1::2]]) / 4.
     return output
 
 def MeanPoolConv(name, input_dim, output_dim, filter_size, inputs, he_init=True, biases=True):
     output = inputs
     output = tf.add_n([output[:,:,::2,::2], output[:,:,1::2,::2], output[:,:,::2,1::2], output[:,:,1::2,1::2]]) / 4.
-    output = lib.ops.conv2d.Conv2D(name, input_dim, output_dim, filter_size, output, he_init=he_init, biases=biases)
+    output = lib.ops.conv2d.Conv2D(name, input_dim, output_dim, filter_size, output, he_init=he_init, biases=biases,\
+            spectralnorm = True, update_collection = True)
     return output
 
 def UpsampleConv(name, input_dim, output_dim, filter_size, inputs, he_init=True, biases=True):
@@ -99,7 +134,8 @@ def UpsampleConv(name, input_dim, output_dim, filter_size, inputs, he_init=True,
     output = tf.transpose(output, [0,2,3,1])
     output = tf.depth_to_space(output, 2)
     output = tf.transpose(output, [0,3,1,2])
-    output = lib.ops.conv2d.Conv2D(name, input_dim, output_dim, filter_size, output, he_init=he_init, biases=biases)
+    output = lib.ops.conv2d.Conv2D(name, input_dim, output_dim, filter_size, output, he_init=he_init, biases=biases,\
+            spectralnorm = True, update_collection = True)
     return output
 
 def ResidualBlock(name, input_dim, output_dim, filter_size, inputs, resample=None, no_dropout=False, labels=None):
@@ -107,17 +143,17 @@ def ResidualBlock(name, input_dim, output_dim, filter_size, inputs, resample=Non
     resample: None, 'down', or 'up'
     """
     if resample=='down':
-        conv_1        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=input_dim, output_dim=input_dim)
+        conv_1        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=input_dim, output_dim=input_dim, spectralnorm=True)
         conv_2        = functools.partial(ConvMeanPool, input_dim=input_dim, output_dim=output_dim)
         conv_shortcut = ConvMeanPool
     elif resample=='up':
         conv_1        = functools.partial(UpsampleConv, input_dim=input_dim, output_dim=output_dim)
         conv_shortcut = UpsampleConv
-        conv_2        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=output_dim, output_dim=output_dim)
+        conv_2        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=output_dim, output_dim=output_dim, spectralnorm=True)
     elif resample==None:
         conv_shortcut = lib.ops.conv2d.Conv2D
-        conv_1        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=input_dim, output_dim=output_dim)
-        conv_2        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=output_dim, output_dim=output_dim)
+        conv_1        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=input_dim, output_dim=output_dim, spectralnorm=True)
+        conv_2        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=output_dim, output_dim=output_dim, spectralnorm=True)
     else:
         raise Exception('invalid resample value')
 
@@ -137,7 +173,7 @@ def ResidualBlock(name, input_dim, output_dim, filter_size, inputs, resample=Non
     return shortcut + output
 
 def OptimizedResBlockDisc1(inputs):
-    conv_1        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=3, output_dim=DIM_D)
+    conv_1        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=3, output_dim=DIM_D, spectralnorm=True)
     conv_2        = functools.partial(ConvMeanPool, input_dim=DIM_D, output_dim=DIM_D)
     conv_shortcut = MeanPoolConv
     shortcut = conv_shortcut('Discriminator.1.Shortcut', input_dim=3, output_dim=DIM_D, filter_size=1, he_init=False, biases=True, inputs=inputs)
@@ -162,6 +198,23 @@ def Generator(n_samples, labels, noise=None):
     output = tf.tanh(output)
     return tf.reshape(output, [-1, OUTPUT_DIM])
 
+def Generator_Imagenet(n_samples, labels, noise=None):
+    if noise is None:
+        noise = tf.random_normal([n_samples, 128])
+    output = lib.ops.linear.Linear('Generator.Input', 128, 4*4*1024, noise)
+    output = tf.reshape(output, [-1, 1024, 4, 4])
+    #print output.get_shape()
+    output = ResidualBlock('Generator.1', 1024, 1024, 3, output, resample='up', labels=labels)
+    output = ResidualBlock('Generator.2', 1024, 512, 3, output, resample='up', labels=labels)
+    output = ResidualBlock('Generator.3', 512, 256, 3, output, resample='up', labels=labels)
+    output = ResidualBlock('Generator.4', 256, 128, 3, output, resample='up', labels=labels)
+    output = ResidualBlock('Generator.5', 128, 64, 3, output, resample='up', labels=labels)
+    output = Normalize('Generator.OutputN', output, labels=labels)
+    output = nonlinearity(output)
+    output = lib.ops.conv2d.Conv2D('Generator.Output', 64, 3, 3, output, he_init=False)
+    output = tf.tanh(output)
+    return tf.reshape(output, [-1, OUTPUT_DIM])
+
 def Discriminator(inputs, labels):
     output = tf.reshape(inputs, [-1, 3, 32, 32])
     output = OptimizedResBlockDisc1(output)
@@ -171,6 +224,38 @@ def Discriminator(inputs, labels):
     output = nonlinearity(output)
     output = tf.reduce_mean(output, axis=[2,3])
     output_wgan = lib.ops.linear.Linear('Discriminator.Output', DIM_D, 1, output)
+    output_wgan = tf.reshape(output_wgan, [-1])
+    if CONDITIONAL and ACGAN:
+        output_acgan = lib.ops.linear.Linear('Discriminator.ACGANOutput', DIM_D, 10, output)
+        return output_wgan, output_acgan
+    else:
+        return output_wgan, None
+
+def Discriminator_Imagenet(inputs, labels):
+    output = tf.reshape(inputs, [-1, 3, 128, 128])
+    #print output.get_shape()
+    #output = OptimizedResBlockDisc1(output)
+    output = ResidualBlock('Discriminator.2', 3, 64, 3, output, resample='down', labels=labels)
+    #print output.get_shape()
+    output = ResidualBlock('Discriminator.3', 64, 128, 3, output, resample='down', labels=labels)
+    #print output.get_shape()
+    output = ResidualBlock('Discriminator.4', 128, 256, 3, output, resample='down', labels=labels)
+    #print output.get_shape()
+    label_one_hot = tf.one_hot(labels, 1000)
+    embed = lib.ops.linear.Linear('Discriminator.embed', 1000, 128, label_one_hot)
+    embed = tf.reshape(embed, [-1, 128, 1, 1])
+    embed_tiled = tf.tile(embed, [1, 1, 16, 16])  # shape (3, 1)
+    #print output.get_shape()
+    output = tf.concat([output,embed_tiled] , axis=1)
+    #print output.get_shape()
+    output = ResidualBlock('Discriminator.6', 384, 512, 3, output, resample='down', labels=labels)
+    output = ResidualBlock('Discriminator.7', 512, 1024, 3, output, resample='down', labels=labels)
+    output = ResidualBlock('Discriminator.8', 1024, 1024, 3, output, resample=None, labels=labels)
+    #print output.get_shape()
+    output = tf.reduce_sum(output, axis=[2,3])
+    #print output.get_shape()
+    output = nonlinearity(output)
+    output_wgan = lib.ops.linear.Linear('Discriminator.Output', 1024, 1, output)
     output_wgan = tf.reshape(output_wgan, [-1])
     if CONDITIONAL and ACGAN:
         output_acgan = lib.ops.linear.Linear('Discriminator.ACGANOutput', DIM_D, 10, output)
@@ -189,7 +274,7 @@ with tf.Session() as session:
     fake_data_splits = []
     for i, device in enumerate(DEVICES):
         with tf.device(device):
-            fake_data_splits.append(Generator(BATCH_SIZE/len(DEVICES), labels_splits[i]))
+            fake_data_splits.append(Generator_Imagenet(BATCH_SIZE/len(DEVICES), labels_splits[i]))
 
     all_real_data = tf.reshape(2*((tf.cast(all_real_data_int, tf.float32)/256.)-.5), [BATCH_SIZE, OUTPUT_DIM])
     all_real_data += tf.random_uniform(shape=[BATCH_SIZE,OUTPUT_DIM],minval=0.,maxval=1./128) # dequantize
@@ -216,7 +301,8 @@ with tf.Session() as session:
                 labels_splits[i],
                 labels_splits[len(DEVICES_A)+i]
             ], axis=0)
-            disc_all, disc_all_acgan = Discriminator(real_and_fake_data, real_and_fake_labels)
+            #disc_all, disc_all_acgan = Discriminator(real_and_fake_data, real_and_fake_labels)
+            disc_all, disc_all_acgan = Discriminator_Imagenet(real_and_fake_data, real_and_fake_labels)
             disc_real = disc_all[:BATCH_SIZE/len(DEVICES_A)]
             disc_fake = disc_all[BATCH_SIZE/len(DEVICES_A):]
             disc_costs.append(tf.reduce_mean(disc_fake) - tf.reduce_mean(disc_real))
@@ -259,7 +345,7 @@ with tf.Session() as session:
             )
             differences = fake_data - real_data
             interpolates = real_data + (alpha*differences)
-            gradients = tf.gradients(Discriminator(interpolates, labels)[0], [interpolates])[0]
+            gradients = tf.gradients(Discriminator_Imagenet(interpolates, labels)[0], [interpolates])[0]
             slopes = tf.sqrt(tf.reduce_sum(tf.square(gradients), reduction_indices=[1]))
             gradient_penalty = 10*tf.reduce_mean((slopes-1.)**2)
             disc_costs.append(gradient_penalty)
@@ -288,15 +374,15 @@ with tf.Session() as session:
     for device in DEVICES:
         with tf.device(device):
             n_samples = GEN_BS_MULTIPLE * BATCH_SIZE / len(DEVICES)
-            fake_labels = tf.cast(tf.random_uniform([n_samples])*10, tf.int32)
+            fake_labels = tf.cast(tf.random_uniform([n_samples])*1000, tf.int32)
             if CONDITIONAL and ACGAN:
-                disc_fake, disc_fake_acgan = Discriminator(Generator(n_samples,fake_labels), fake_labels)
+                disc_fake, disc_fake_acgan = Discriminator_Imagenet(Generator_Imagenet(n_samples,fake_labels), fake_labels)
                 gen_costs.append(-tf.reduce_mean(disc_fake))
                 gen_acgan_costs.append(tf.reduce_mean(
                     tf.nn.sparse_softmax_cross_entropy_with_logits(logits=disc_fake_acgan, labels=fake_labels)
                 ))
             else:
-                gen_costs.append(-tf.reduce_mean(Discriminator(Generator(n_samples, fake_labels), fake_labels)[0]))
+                gen_costs.append(-tf.reduce_mean(Discriminator_Imagenet(Generator_Imagenet(n_samples, fake_labels), fake_labels)[0]))
     gen_cost = (tf.add_n(gen_costs) / len(DEVICES))
     if CONDITIONAL and ACGAN:
         gen_cost += (ACGAN_SCALE_G*(tf.add_n(gen_acgan_costs) / len(DEVICES)))
@@ -312,16 +398,21 @@ with tf.Session() as session:
     # Function for generating samples
     frame_i = [0]
     fixed_noise = tf.constant(np.random.normal(size=(100, 128)).astype('float32'))
-    fixed_labels = tf.constant(np.array([0,1,2,3,4,5,6,7,8,9]*10,dtype='int32'))
-    fixed_noise_samples = Generator(100, fixed_labels, noise=fixed_noise)
+    fixed_labels = tf.constant(np.arange(100),dtype='int32')
+    fixed_noise_samples = Generator_Imagenet(100, fixed_labels, noise=fixed_noise)
     def generate_image(frame, true_dist):
         samples = session.run(fixed_noise_samples)
         samples = ((samples+1.)*(255./2)).astype('int32')
         lib.save_images.save_images(samples.reshape((100, 3, 32, 32)), 'samples_{}.png'.format(frame))
 
+    def generate_image_Imagenet(frame, true_dist):
+        samples = session.run(fixed_noise_samples)
+        samples = ((samples+1.)*(255./2)).astype('int32')
+        lib.save_images.save_images(samples.reshape((100, 3, 128, 128)), 'samples_{}.png'.format(frame))
+
     # Function for calculating inception score
     fake_labels_100 = tf.cast(tf.random_uniform([100])*10, tf.int32)
-    samples_100 = Generator(100, fake_labels_100)
+    samples_100 = Generator_Imagenet(100, fake_labels_100)
     def get_inception_score(n):
         all_samples = []
         for i in xrange(n/100):
@@ -331,12 +422,34 @@ with tf.Session() as session:
         all_samples = all_samples.reshape((-1, 3, 32, 32)).transpose(0,2,3,1)
         return lib.inception_score.get_inception_score(list(all_samples))
 
-    train_gen, dev_gen = lib.cifar10.load(BATCH_SIZE, DATA_DIR)
+    #train_gen, dev_gen = lib.cifar10.load(BATCH_SIZE, DATA_DIR)
+    train_gen, dev_gen = lib.imagenet.load(BATCH_SIZE, DATA_DIR)
     def inf_train_gen():
         while True:
+            """
             for images,_labels in train_gen():
                 yield images,_labels
-
+            """
+            for index_list in train_gen():
+                all_images = []
+                all_labels = []
+                for index in index_list:
+                    line = linecache.getline(os.path.join(DATA_DIR,'Label','train.txt'),index+1)
+                    line = line.strip()
+                    img = cv2.imread(os.path.join(DATA_DIR,'Data','CLS-LOC','train',line.split(' ')[0]))
+                    img = cv2.resize(img, (128, 128))
+                    img_new = np.zeros((128, 128, 3),dtype=float)
+                    img_new = img_new/(255.0/2)
+                    for i in range(3):
+                        img_new[:, :, i] = img[:, :, i] - 1
+                    #print img.reshape((1,-1)).shape
+                    all_images.append(img_new.reshape((1,-1)))
+                    all_labels.append(int(line.split(' ')[1]))
+                all_labels = np.array(all_labels)
+                all_labels = all_labels[np.newaxis]
+                images = np.concatenate(all_images, axis=0)
+                labels = np.concatenate(all_labels, axis=0)
+                yield images,labels
 
     for name,grads_and_vars in [('G', gen_gv), ('D', disc_gv)]:
         print "{} Params:".format(name)
@@ -391,12 +504,30 @@ with tf.Session() as session:
         # Calculate dev loss and generate samples every 100 iters
         if iteration % 100 == 99:
             dev_disc_costs = []
-            for images,_labels in dev_gen():
+            for index_list in dev_gen():
+                all_images = []
+                all_labels = []
+                for index in index_list:
+                    line = linecache.getline(os.path.join(DATA_DIR, 'Label', 'val.txt'), index+1)
+                    line = line.strip()
+                    img = cv2.imread(os.path.join(DATA_DIR, 'Data', 'CLS-LOC', 'val', line.split(' ')[0]))
+                    img = cv2.resize(img, (128, 128))
+                    img_new = np.zeros((128, 128, 3), dtype=float)
+                    for i in range(3):
+                        img_new[:, :, i] = img[:, :, i] - pixel_means[i]
+                    img_new = img_new / 255
+                    # print img.reshape((1,-1)).shape
+                    all_images.append(img_new.reshape((1, -1)))
+                    all_labels.append(int(line.split(' ')[1]))
+                all_labels = np.array(all_labels)
+                all_labels = all_labels[np.newaxis]
+                images = np.concatenate(all_images, axis=0)
+                labels = np.concatenate(all_labels, axis=0)
                 _dev_disc_cost = session.run([disc_cost], feed_dict={all_real_data_int: images,all_real_labels:_labels})
                 dev_disc_costs.append(_dev_disc_cost)
             lib.plot.plot('dev_cost', np.mean(dev_disc_costs))
 
-            generate_image(iteration, _data)
+            generate_image_Imagenet(iteration, _data)
 
         if (iteration < 500) or (iteration % 1000 == 999):
             lib.plot.flush()
