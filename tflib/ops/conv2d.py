@@ -105,7 +105,7 @@ def Conv2D(name, input_dim, output_dim, filter_size, inputs, he_init=True, mask_
                 norms = tf.sqrt(tf.reduce_sum(tf.square(filters), reduction_indices=[0,1,2]))
                 filters = filters * (target_norms / norms)
         if spectralnorm:
-            filters = spectral_normed_weight(filters, update_collection=update_collection)
+            filters = spectral_normed_weight(W = filters, update_collection=update_collection)
         if mask_type is not None:
             with tf.name_scope('filter_mask'):
                 filters = filters * mask

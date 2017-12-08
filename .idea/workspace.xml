@@ -4,6 +4,7 @@
     <list default="true" id="70fce5a2-6480-463b-a9e1-98eb866874f6" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gan_imagenet_resnet.py" afterPath="$PROJECT_DIR$/gan_imagenet_resnet.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tflib/ops/conv2d.py" afterPath="$PROJECT_DIR$/tflib/ops/conv2d.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tflib/ops/linear.py" afterPath="$PROJECT_DIR$/tflib/ops/linear.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -19,8 +20,8 @@
       <file leaf-file-name="gan_imagenet_resnet.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gan_imagenet_resnet.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5">
-              <caret line="224" column="43" lean-forward="true" selection-start-line="224" selection-start-column="43" selection-end-line="224" selection-end-column="43" />
+            <state relative-caret-position="-850">
+              <caret line="421" column="82" lean-forward="true" selection-start-line="421" selection-start-column="82" selection-end-line="421" selection-end-column="82" />
               <folding />
             </state>
           </provider>
@@ -29,8 +30,8 @@
       <file leaf-file-name="linear.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tflib/ops/linear.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="460">
-              <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+            <state relative-caret-position="331">
+              <caret line="43" column="38" lean-forward="true" selection-start-line="43" selection-start-column="38" selection-end-line="43" selection-end-column="38" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
               </folding>
@@ -41,8 +42,8 @@
       <file leaf-file-name="sn.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tflib/ops/sn.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="200">
-              <caret line="11" column="33" lean-forward="true" selection-start-line="11" selection-start-column="33" selection-end-line="11" selection-end-column="33" />
+            <state relative-caret-position="751">
+              <caret line="48" column="0" lean-forward="true" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -51,20 +52,8 @@
       <file leaf-file-name="conv2d.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tflib/ops/conv2d.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="400">
-              <caret line="20" column="23" lean-forward="false" selection-start-line="20" selection-start-column="11" selection-end-line="20" selection-end-column="23" />
-              <folding>
-                <element signature="e#0#19#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="layernorm.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tflib/ops/layernorm.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
-              <caret line="6" column="42" lean-forward="false" selection-start-line="6" selection-start-column="42" selection-end-line="6" selection-end-column="42" />
+            <state relative-caret-position="700">
+              <caret line="107" column="29" lean-forward="true" selection-start-line="107" selection-start-column="29" selection-end-line="107" selection-end-column="29" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
               </folding>
@@ -82,31 +71,14 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tflib/__init__.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="580">
-              <caret line="32" column="26" lean-forward="false" selection-start-line="32" selection-start-column="26" selection-end-line="32" selection-end-column="26" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
     </leaf>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>generate_image</find>
-      <find>ACGAN</find>
-      <find>Layernorm</find>
-      <find>spectral_normed_weight</find>
-      <find>load_img</find>
       <find>NORMALIZATION_D</find>
-      <find>Discriminator_Imagenet</find>
       <find>255</find>
       <find>10</find>
       <find>DEVICES</find>
-      <find>he_init</find>
       <find>INCEPTION_FREQUENCY</find>
       <find>inf_train_gen</find>
       <find>display_imgs</find>
@@ -115,17 +87,24 @@
       <find>disc_cost</find>
       <find>_disc_cost</find>
       <find>fake_data</find>
-      <find>spectralnorm</find>
       <find>Conv2D</find>
       <find>pixel_means</find>
       <find>spectral_normed</find>
       <find>spectral</find>
-      <find>Generator_Imagenet</find>
       <find>fused</find>
       <find>weightnorm</find>
       <find>adam</find>
-      <find>u</find>
+      <find>GEN_BS_MULTIPLE</find>
       <find>filters</find>
+      <find>spectralnorm</find>
+      <find>he_init</find>
+      <find>update_collection</find>
+      <find>scope</find>
+      <find>.reuse</find>
+      <find>Discriminator_Imagenet</find>
+      <find>u</find>
+      <find>with tf.variable_scope(</find>
+      <find>Generator_Imagenet</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -140,13 +119,13 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/tflib/Imagenet.py" />
-        <option value="$PROJECT_DIR$/tflib/ops/sn.py" />
         <option value="$PROJECT_DIR$/tflib/imagenet.py" />
         <option value="$PROJECT_DIR$/gan_cifar_resnet.py" />
         <option value="$PROJECT_DIR$/tflib/save_images.py" />
+        <option value="$PROJECT_DIR$/tflib/ops/sn.py" />
+        <option value="$PROJECT_DIR$/tflib/ops/linear.py" />
         <option value="$PROJECT_DIR$/tflib/ops/conv2d.py" />
         <option value="$PROJECT_DIR$/gan_imagenet_resnet.py" />
-        <option value="$PROJECT_DIR$/tflib/ops/linear.py" />
       </list>
     </option>
   </component>
@@ -404,14 +383,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tflib/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="580">
-          <caret line="32" column="26" lean-forward="false" selection-start-line="32" selection-start-column="26" selection-end-line="32" selection-end-column="26" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tflib/plot.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
@@ -490,18 +461,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tflib/ops/sn.py">
+    <entry file="file://$PROJECT_DIR$/tflib/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="200">
-          <caret line="11" column="33" lean-forward="true" selection-start-line="11" selection-start-column="33" selection-end-line="11" selection-end-column="33" />
+        <state relative-caret-position="580">
+          <caret line="32" column="26" lean-forward="false" selection-start-line="32" selection-start-column="26" selection-end-line="32" selection-end-column="26" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tflib/ops/linear.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="460">
-          <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+        <state relative-caret-position="331">
+          <caret line="43" column="38" lean-forward="true" selection-start-line="43" selection-start-column="38" selection-end-line="43" selection-end-column="38" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
           </folding>
@@ -510,18 +481,26 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tflib/ops/conv2d.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="400">
-          <caret line="20" column="23" lean-forward="false" selection-start-line="20" selection-start-column="11" selection-end-line="20" selection-end-column="23" />
+        <state relative-caret-position="700">
+          <caret line="107" column="29" lean-forward="true" selection-start-line="107" selection-start-column="29" selection-end-line="107" selection-end-column="29" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/tflib/ops/sn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="751">
+          <caret line="48" column="0" lean-forward="true" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/gan_imagenet_resnet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5">
-          <caret line="224" column="43" lean-forward="true" selection-start-line="224" selection-start-column="43" selection-end-line="224" selection-end-column="43" />
+        <state relative-caret-position="-850">
+          <caret line="421" column="82" lean-forward="true" selection-start-line="421" selection-start-column="82" selection-end-line="421" selection-end-column="82" />
           <folding />
         </state>
       </provider>

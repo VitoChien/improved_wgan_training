@@ -83,7 +83,7 @@ def Linear(
 
         elif initialization == 'orthogonal' or \
             (initialization == None and input_dim == output_dim):
-            
+
             # From lasagne
             def sample(shape):
                 if len(shape) < 2:
@@ -98,9 +98,9 @@ def Linear(
                 q = q.reshape(shape)
                 return q.astype('float32')
             weight_values = sample((input_dim, output_dim))
-        
+
         elif initialization[0] == 'uniform':
-        
+
             weight_values = np.random.uniform(
                 low=-initialization[1],
                 high=initialization[1],
