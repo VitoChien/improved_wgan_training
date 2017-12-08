@@ -118,27 +118,27 @@ def Normalize(name, inputs,labels=None,is_training=True):
         return inputs
     """
 
-def ConvMeanPool(name, input_dim, output_dim, filter_size, inputs, he_init=True, biases=True):
+def ConvMeanPool(name, input_dim, output_dim, filter_size, inputs, he_init=True, biases=True, spectralnorm=True):
     output = lib.ops.conv2d.Conv2D(name, input_dim, output_dim, filter_size, inputs, he_init=he_init, biases=biases,\
-        spectralnorm = True, update_collection = True)
+        spectralnorm = spectralnorm, update_collection = True)
     output = tf.add_n([output[:,:,::2,::2], output[:,:,1::2,::2], output[:,:,::2,1::2], output[:,:,1::2,1::2]]) / 4.
     return output
 
-def MeanPoolConv(name, input_dim, output_dim, filter_size, inputs, he_init=True, biases=True):
+def MeanPoolConv(name, input_dim, output_dim, filter_size, inputs, he_init=True, biases=True, spectralnorm=True):
     output = inputs
     output = tf.add_n([output[:,:,::2,::2], output[:,:,1::2,::2], output[:,:,::2,1::2], output[:,:,1::2,1::2]]) / 4.
     output = lib.ops.conv2d.Conv2D(name, input_dim, output_dim, filter_size, output, he_init=he_init, biases=biases,\
-            spectralnorm = True, update_collection = True)
+            spectralnorm = spectralnorm, update_collection = True)
     return output
 
-def UpsampleConv(name, input_dim, output_dim, filter_size, inputs, he_init=True, biases=True):
+def UpsampleConv(name, input_dim, output_dim, filter_size, inputs, he_init=True, biases=True, spectralnorm=True):
     output = inputs
     output = tf.concat([output, output, output, output], axis=1)
     output = tf.transpose(output, [0,2,3,1])
     output = tf.depth_to_space(output, 2)
     output = tf.transpose(output, [0,3,1,2])
     output = lib.ops.conv2d.Conv2D(name, input_dim, output_dim, filter_size, output, he_init=he_init, biases=biases,\
-            spectralnorm = True, update_collection = True)
+            spectralnorm = spectralnorm, update_collection = True)
     return output
 
 def ResidualBlock(name, input_dim, output_dim, filter_size, inputs, resample=None, no_dropout=False, labels=None):
@@ -147,10 +147,10 @@ def ResidualBlock(name, input_dim, output_dim, filter_size, inputs, resample=Non
     """
     if resample=='down':
         conv_1        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=input_dim, output_dim=input_dim, spectralnorm=True)
-        conv_2        = functools.partial(ConvMeanPool, input_dim=input_dim, output_dim=output_dim)
+        conv_2        = functools.partial(ConvMeanPool, input_dim=input_dim, output_dim=output_dim, spectralnorm=True)
         conv_shortcut = ConvMeanPool
     elif resample=='up':
-        conv_1        = functools.partial(UpsampleConv, input_dim=input_dim, output_dim=output_dim)
+        conv_1        = functools.partial(UpsampleConv, input_dim=input_dim, output_dim=output_dim, spectralnorm=True)
         conv_shortcut = UpsampleConv
         conv_2        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=output_dim, output_dim=output_dim, spectralnorm=True)
     elif resample==None:
@@ -163,12 +163,13 @@ def ResidualBlock(name, input_dim, output_dim, filter_size, inputs, resample=Non
     if output_dim==input_dim and resample==None:
         shortcut = inputs # Identity skip-connection
     else:
-        shortcut = conv_shortcut(name+'.Shortcut', input_dim=input_dim, output_dim=output_dim, filter_size=1, he_init=False, biases=True, inputs=inputs)
+        shortcut = conv_shortcut(name+'.Shortcut', input_dim=input_dim, output_dim=output_dim, filter_size=1, he_init=False,\
+                                 biases=True, inputs=inputs, spectralnorm=True)
 
     output = inputs
     output = Normalize(name+'.N1', output, labels=labels)
     output = nonlinearity(output)
-    output = conv_1(name+'.Conv1', filter_size=filter_size, inputs=output)    
+    output = conv_1(name+'.Conv1', filter_size=filter_size, inputs=output)
     output = Normalize(name+'.N2', output, labels=labels)
     output = nonlinearity(output)            
     output = conv_2(name+'.Conv2', filter_size=filter_size, inputs=output)
@@ -411,12 +412,14 @@ with tf.Session() as session:
 
     def generate_image_Imagenet(frame, true_dist):
         samples = session.run(fixed_noise_samples)
+        print samples
         samples = ((samples+1.)*(255./2)).astype('int32')
         lib.save_images.save_images(samples.reshape((100, 3, 128, 128)), 'samples_{}.png'.format(frame))
 
-    def display_imgs(frame, true_dist):
+    def display_imgs(prefix, frame, true_dist):
+        #print true_dist
         img = ((true_dist+1.)*(255./2)).astype('int32')
-        lib.save_images.save_images(img.reshape((-1, 3, 128, 128)), 'train_samples_{}.png'.format(frame))
+        lib.save_images.save_images(img.reshape((-1, 3, 128, 128)), prefix + '_samples_{}.png'.format(frame))
     '''
     def display_imgs(frame, true_dist):
         img = ((true_dist)*(255.)).astype('int32')
@@ -457,11 +460,6 @@ with tf.Session() as session:
                     for i in range(3):
                         img[:, :, i] = img[:, :, i] - 1
                     img = img.transpose(2,0,1)
-                    '''
-                    img_new = img_new/(255.0/2)
-                    for i in range(3):
-                        img_new[:, :, i] = img[:, :, i] - 1
-                    '''
                     #print img.reshape((1,-1)).shape
                     all_images.append(img.reshape((1,-1)))
                     all_labels.append(int(line.split(' ')[1]))
@@ -506,8 +504,8 @@ with tf.Session() as session:
             if CONDITIONAL and ACGAN:
                 _disc_cost, _disc_wgan, _disc_acgan, _disc_acgan_acc, _disc_acgan_fake_acc, _ = session.run([disc_cost, disc_wgan, disc_acgan, disc_acgan_acc, disc_acgan_fake_acc, disc_train_op], feed_dict={all_real_data_int: _data, all_real_labels:_labels, _iteration:iteration})
             else:
-                _disc_cost, _ = session.run([disc_cost, disc_train_op], feed_dict={all_real_data_int: _data, all_real_labels:_labels, _iteration:iteration})
-
+                _disc_cost, _fake_data, _ = session.run([disc_cost, fake_data, disc_train_op], feed_dict={all_real_data_int: _data, all_real_labels:_labels, _iteration:iteration})
+                #print _fake_data
         lib.plot.plot('cost', _disc_cost)
         if CONDITIONAL and ACGAN:
             lib.plot.plot('wgan', _disc_wgan)
@@ -520,9 +518,13 @@ with tf.Session() as session:
             inception_score = get_inception_score(50000)
             lib.plot.plot('inception_50k', inception_score[0])
             lib.plot.plot('inception_50k_std', inception_score[1])
-
+        '''
         if iteration % 10 == 0:
-            display_imgs(iteration,_data)
+            display_imgs('generator',iteration, _fake_data)
+            display_imgs('train_data', iteration, _data)
+        '''
+        if iteration % 10 == 0:
+            display_imgs('generator',iteration, _fake_data)
 
         # Calculate dev loss and generate samples every 100 iters
         if iteration % 100 == 99:
