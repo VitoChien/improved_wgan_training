@@ -1,5 +1,6 @@
 import tflib as lib
 
+from sn import spectral_normed_weight
 import numpy as np
 import tensorflow as tf
 
@@ -29,6 +30,8 @@ def Linear(
         biases=True,
         initialization=None,
         weightnorm=None,
+        spectralnorm=None,
+        update_collection = True,
         gain=1.
         ):
     """
@@ -124,7 +127,8 @@ def Linear(
             with tf.name_scope('weightnorm') as scope:
                 norms = tf.sqrt(tf.reduce_sum(tf.square(weight), reduction_indices=[0]))
                 weight = weight * (target_norms / norms)
-
+        if spectralnorm:
+            filters = spectral_normed_weight(filters, update_collection=update_collection)
         # if 'Discriminator' in name:
         #     print "WARNING weight constraint on {}".format(name)
         #     weight = tf.nn.softsign(10.*weight)*.1

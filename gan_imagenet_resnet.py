@@ -46,7 +46,7 @@ ITERS = 100000 # How many iterations to train for
 DIM_G = 128 # Generator dimensionality
 DIM_D = 128 # Critic dimensionality
 NORMALIZATION_G = True # Use batchnorm in generator?
-NORMALIZATION_D = True # Use batchnorm (or layernorm) in critic?
+NORMALIZATION_D = False # Use batchnorm (or layernorm) in critic?
 #OUTPUT_DIM = 3072 # Number of pixels in CIFAR10 (32*32*3)
 OUTPUT_DIM = 49152 # Number of pixels in Imagenet (128*128*3)
 LR = 2e-4 # Initial learning rate
@@ -70,7 +70,7 @@ DEVICES = ['/gpu:{}'.format(i) for i in xrange(N_GPUS)]
 if len(DEVICES) == 1: # Hack because the code assumes 2 GPUs
     DEVICES = [DEVICES[0], DEVICES[0]]
 
-DEVICES = ['/gpu:0','/gpu:3']
+DEVICES = ['/gpu:0','/gpu:1']
 
 lib.print_model_settings(locals().copy())
 
@@ -94,6 +94,9 @@ def Normalize(name, inputs,labels=None,is_training=True):
             return lib.ops.layernorm.Layernorm(name,[1,2,3],inputs,labels=labels,n_labels=10)
         """
         return lib.ops.layernorm.Layernorm(name,[1,2,3],inputs)
+    elif ('Generator' in name) and ('OutputN' in name) and NORMALIZATION_G:
+        #print name
+        return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
     elif ('Generator' in name) and NORMALIZATION_G:
         if labels is not None:
             #print("##################################################")
@@ -209,7 +212,8 @@ def Generator_Imagenet(n_samples, labels, noise=None):
     output = ResidualBlock('Generator.3', 512, 256, 3, output, resample='up', labels=labels)
     output = ResidualBlock('Generator.4', 256, 128, 3, output, resample='up', labels=labels)
     output = ResidualBlock('Generator.5', 128, 64, 3, output, resample='up', labels=labels)
-    output = Normalize('Generator.OutputN', output, labels=labels)
+    #output = Normalize('Generator.OutputN', output, labels=labels)
+    output = Normalize('Generator.OutputN', output)
     output = nonlinearity(output)
     output = lib.ops.conv2d.Conv2D('Generator.Output', 64, 3, 3, output, he_init=False)
     output = tf.tanh(output)
@@ -410,6 +414,16 @@ with tf.Session() as session:
         samples = ((samples+1.)*(255./2)).astype('int32')
         lib.save_images.save_images(samples.reshape((100, 3, 128, 128)), 'samples_{}.png'.format(frame))
 
+    def display_imgs(frame, true_dist):
+        img = ((true_dist+1.)*(255./2)).astype('int32')
+        lib.save_images.save_images(img.reshape((-1, 3, 128, 128)), 'train_samples_{}.png'.format(frame))
+    '''
+    def display_imgs(frame, true_dist):
+        img = ((true_dist)*(255.)).astype('int32')
+        print img
+        lib.save_images.save_images(img.reshape((-1, 3, 128, 128)), 'train_samples_{}.png'.format(frame))
+    '''
+
     # Function for calculating inception score
     fake_labels_100 = tf.cast(tf.random_uniform([100])*10, tf.int32)
     samples_100 = Generator_Imagenet(100, fake_labels_100)
@@ -438,12 +452,18 @@ with tf.Session() as session:
                     line = line.strip()
                     img = cv2.imread(os.path.join(DATA_DIR,'Data','CLS-LOC','train',line.split(' ')[0]))
                     img = cv2.resize(img, (128, 128))
-                    img_new = np.zeros((128, 128, 3),dtype=float)
+                    img = img.astype(float)
+                    img = img/(255.0/2)
+                    for i in range(3):
+                        img[:, :, i] = img[:, :, i] - 1
+                    img = img.transpose(2,0,1)
+                    '''
                     img_new = img_new/(255.0/2)
                     for i in range(3):
                         img_new[:, :, i] = img[:, :, i] - 1
+                    '''
                     #print img.reshape((1,-1)).shape
-                    all_images.append(img_new.reshape((1,-1)))
+                    all_images.append(img.reshape((1,-1)))
                     all_labels.append(int(line.split(' ')[1]))
                 all_labels = np.array(all_labels)
                 all_labels = all_labels[np.newaxis]
@@ -501,6 +521,9 @@ with tf.Session() as session:
             lib.plot.plot('inception_50k', inception_score[0])
             lib.plot.plot('inception_50k_std', inception_score[1])
 
+        if iteration % 10 == 0:
+            display_imgs(iteration,_data)
+
         # Calculate dev loss and generate samples every 100 iters
         if iteration % 100 == 99:
             dev_disc_costs = []
@@ -512,12 +535,13 @@ with tf.Session() as session:
                     line = line.strip()
                     img = cv2.imread(os.path.join(DATA_DIR, 'Data', 'CLS-LOC', 'val', line.split(' ')[0]))
                     img = cv2.resize(img, (128, 128))
-                    img_new = np.zeros((128, 128, 3), dtype=float)
+                    img = img.astype(float)
+                    img = img/(255.0/2)
                     for i in range(3):
-                        img_new[:, :, i] = img[:, :, i] - pixel_means[i]
-                    img_new = img_new / 255
+                        img[:, :, i] = img[:, :, i] - 1
+                    img = img.transpose(2,0,1)
                     # print img.reshape((1,-1)).shape
-                    all_images.append(img_new.reshape((1, -1)))
+                    all_images.append(img.reshape((1, -1)))
                     all_labels.append(int(line.split(' ')[1]))
                 all_labels = np.array(all_labels)
                 all_labels = all_labels[np.newaxis]
