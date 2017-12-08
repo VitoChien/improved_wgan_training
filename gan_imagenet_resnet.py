@@ -247,7 +247,7 @@ def Discriminator_Imagenet(inputs, labels):
     output = ResidualBlock('Discriminator.4', 128, 256, 3, output, resample='down', labels=labels)
     #print output.get_shape()
     label_one_hot = tf.one_hot(labels, 1000)
-    embed = lib.ops.linear.Linear('Discriminator.embed', 1000, 128, label_one_hot)
+    embed = lib.ops.linear.Linear('Discriminator.embed', 1000, 128, label_one_hot, spectralnorm = True)
     embed = tf.reshape(embed, [-1, 128, 1, 1])
     embed_tiled = tf.tile(embed, [1, 1, 16, 16])  # shape (3, 1)
     #print output.get_shape()
@@ -260,7 +260,7 @@ def Discriminator_Imagenet(inputs, labels):
     output = tf.reduce_sum(output, axis=[2,3])
     #print output.get_shape()
     output = nonlinearity(output)
-    output_wgan = lib.ops.linear.Linear('Discriminator.Output', 1024, 1, output)
+    output_wgan = lib.ops.linear.Linear('Discriminator.Output', 1024, 1, output, spectralnorm = True)
     output_wgan = tf.reshape(output_wgan, [-1])
     if CONDITIONAL and ACGAN:
         output_acgan = lib.ops.linear.Linear('Discriminator.ACGANOutput', DIM_D, 10, output)

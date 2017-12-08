@@ -22,6 +22,9 @@ def unset_weights_stdev():
     global _weights_stdev
     _weights_stdev = None
 
+def scope_has_variables(scope):
+  return len(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=scope.name)) > 0
+
 def Linear(
         name, 
         input_dim, 
@@ -37,7 +40,9 @@ def Linear(
     """
     initialization: None, `lecun`, 'glorot', `he`, 'glorot_he', `orthogonal`, `("uniform", range)`
     """
-    with tf.name_scope(name) as scope:
+    with tf.variable_scope(name) as scope:
+        if scope_has_variables(scope):
+            scope.reuse_variables()
 
         def uniform(stdev, size):
             if _weights_stdev is not None:
@@ -127,8 +132,9 @@ def Linear(
             with tf.name_scope('weightnorm') as scope:
                 norms = tf.sqrt(tf.reduce_sum(tf.square(weight), reduction_indices=[0]))
                 weight = weight * (target_norms / norms)
+
         if spectralnorm:
-            filters = spectral_normed_weight(filters, update_collection=update_collection)
+            weight = spectral_normed_weight(weight, update_collection=update_collection)
         # if 'Discriminator' in name:
         #     print "WARNING weight constraint on {}".format(name)
         #     weight = tf.nn.softsign(10.*weight)*.1
