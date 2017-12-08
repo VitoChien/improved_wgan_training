@@ -94,7 +94,7 @@ def Normalize(name, inputs,labels=None,is_training=True):
             return lib.ops.layernorm.Layernorm(name,[1,2,3],inputs,labels=labels,n_labels=10)
         """
         return lib.ops.layernorm.Layernorm(name,[1,2,3],inputs)
-    elif ('Generator' in name) and ('OutputN' in name) and NORMALIZATION_G:
+    elif ('Generator' in name) and ('mid' in name) and NORMALIZATION_G:
         #print name
         return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
     elif ('Generator' in name) and NORMALIZATION_G:
@@ -141,27 +141,27 @@ def UpsampleConv(name, input_dim, output_dim, filter_size, inputs, he_init=True,
             spectralnorm = spectralnorm, update_collection = update_collection)
     return output
 
-def ResidualBlock(name, input_dim, output_dim, filter_size, inputs, resample=None, no_dropout=False, labels=None, update_collection = None):
+def ResidualBlock(name, input_dim, output_dim, filter_size, inputs, resample=None, no_dropout=False, labels=None, update_collection = None,spectralnorm = True):
     """
     resample: None, 'down', or 'up'
     """
     if resample=='down':
-        conv_1        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=input_dim, output_dim=input_dim, spectralnorm=True, \
+        conv_1        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=input_dim, output_dim=input_dim, spectralnorm=spectralnorm, \
                                       update_collection=update_collection)
-        conv_2        = functools.partial(ConvMeanPool, input_dim=input_dim, output_dim=output_dim, spectralnorm=True, \
+        conv_2        = functools.partial(ConvMeanPool, input_dim=input_dim, output_dim=output_dim, spectralnorm=spectralnorm, \
                                       update_collection=update_collection)
         conv_shortcut = ConvMeanPool
     elif resample=='up':
-        conv_1        = functools.partial(UpsampleConv, input_dim=input_dim, output_dim=output_dim, spectralnorm=True, \
+        conv_1        = functools.partial(UpsampleConv, input_dim=input_dim, output_dim=output_dim, spectralnorm=spectralnorm, \
                                       update_collection=update_collection)
         conv_shortcut = UpsampleConv
-        conv_2        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=output_dim, output_dim=output_dim, spectralnorm=True, \
+        conv_2        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=output_dim, output_dim=output_dim, spectralnorm=spectralnorm, \
                                       update_collection=update_collection)
     elif resample==None:
         conv_shortcut = lib.ops.conv2d.Conv2D
-        conv_1        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=input_dim, output_dim=output_dim, spectralnorm=True, \
+        conv_1        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=input_dim, output_dim=output_dim, spectralnorm=spectralnorm, \
                                       update_collection=update_collection)
-        conv_2        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=output_dim, output_dim=output_dim, spectralnorm=True, \
+        conv_2        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=output_dim, output_dim=output_dim, spectralnorm=spectralnorm, \
                                       update_collection=update_collection)
     else:
         raise Exception('invalid resample value')
@@ -170,7 +170,7 @@ def ResidualBlock(name, input_dim, output_dim, filter_size, inputs, resample=Non
         shortcut = inputs # Identity skip-connection
     else:
         shortcut = conv_shortcut(name+'.Shortcut', input_dim=input_dim, output_dim=output_dim, filter_size=1, he_init=False,\
-                                 biases=True, inputs=inputs, spectralnorm=True, update_collection=update_collection)
+                                 biases=True, inputs=inputs, spectralnorm=spectralnorm, update_collection=update_collection)
 
     output = inputs
     output = Normalize(name+'.N1', output, labels=labels)
@@ -182,14 +182,14 @@ def ResidualBlock(name, input_dim, output_dim, filter_size, inputs, resample=Non
 
     return shortcut + output
 
-def OptimizedResBlockDisc1(inputs, output_dim,update_collection = True):
-    conv_1        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=3, output_dim=output_dim, spectralnorm=True, \
+def OptimizedResBlockDisc1(inputs, output_dim,update_collection = True,spectralnorm = True):
+    conv_1        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=3, output_dim=output_dim, spectralnorm=spectralnorm, \
                                       update_collection=update_collection)
-    conv_2        = functools.partial(ConvMeanPool, input_dim=output_dim, output_dim=output_dim, spectralnorm=True, \
+    conv_2        = functools.partial(ConvMeanPool, input_dim=output_dim, output_dim=output_dim, spectralnorm=spectralnorm, \
                                       update_collection=update_collection)
     conv_shortcut = MeanPoolConv
     shortcut = conv_shortcut('Discriminator.1.Shortcut', input_dim=3, output_dim=output_dim, filter_size=1, \
-                             he_init=False, biases=True, inputs=inputs, spectralnorm=True, update_collection=update_collection)
+                             he_init=False, biases=True, inputs=inputs, spectralnorm=spectralnorm, update_collection=update_collection)
 
     output = inputs
     output = conv_1('Discriminator.1.Conv1', filter_size=3, inputs=output)    
@@ -220,15 +220,20 @@ def Generator_Imagenet(n_samples, labels, noise=None):
                                        update_collection = update_collection)
         output = tf.reshape(output, [-1, 1024, 4, 4])
         #print output.get_shape()
-        output = ResidualBlock('Generator.1', 1024, 1024, 3, output, resample='up', labels=labels, update_collection = update_collection)
-        output = ResidualBlock('Generator.2', 1024, 512, 3, output, resample='up', labels=labels, update_collection = update_collection)
-        output = ResidualBlock('Generator.3', 512, 256, 3, output, resample='up', labels=labels, update_collection = update_collection)
-        output = ResidualBlock('Generator.4', 256, 128, 3, output, resample='up', labels=labels, update_collection = update_collection)
-        output = ResidualBlock('Generator.5', 128, 64, 3, output, resample='up', labels=labels, update_collection = update_collection)
+        output = ResidualBlock('Generator.1', 1024, 1024, 3, output, resample='up', labels=labels, spectralnorm = True, \
+                               update_collection = update_collection)
+        output = ResidualBlock('Generator.2', 1024, 512, 3, output, resample='up', labels=labels, spectralnorm = True, \
+                               update_collection = update_collection)
+        output = ResidualBlock('Generator.3', 512, 256, 3, output, resample='up', labels=labels, spectralnorm = True, \
+                               update_collection = update_collection)
+        output = ResidualBlock('Generator.4', 256, 128, 3, output, resample='up', labels=labels, spectralnorm = True, \
+                               update_collection = update_collection)
+        output = ResidualBlock('Generator.5', 128, 64, 3, output, resample='up', labels=labels, spectralnorm = True, \
+                               update_collection = update_collection)
         #output = Normalize('Generator.OutputN', output, labels=labels)
-        output = Normalize('Generator.OutputN', output)
+        output = Normalize('Generator.mid', output)
         output = nonlinearity(output)
-        output = lib.ops.conv2d.Conv2D('Generator.Output', 64, 3, 3, output, he_init=False,spectralnorm = True, \
+        output = lib.ops.conv2d.Conv2D('Generator.Output', 64, 3, 3, output, he_init=False, spectralnorm = True, \
                                        update_collection = update_collection)
         output = tf.tanh(output)
         return tf.reshape(output, [-1, OUTPUT_DIM])
@@ -249,33 +254,34 @@ def Discriminator(inputs, labels):
     else:
         return output_wgan, None
 
-def Discriminator_Imagenet(inputs, labels, reuse_flag):
-    with tf.variable_scope("Discriminator",reuse = reuse_flag):
+def Discriminator_Imagenet(inputs, labels):
+    with tf.variable_scope("Discriminator"):
         update_collection = tf.GraphKeys.UPDATE_OPS
         output = tf.reshape(inputs, [-1, 3, 128, 128])
-        #print output.get_shape()
-        output = OptimizedResBlockDisc1(output,64,update_collection = update_collection)
-        #output = ResidualBlock('Discriminator.2', 3, 64, 3, output, resample='down', labels=labels)
-        #print output.get_shape()
-        output = ResidualBlock('Discriminator.3', 64, 128, 3, output, resample='down', labels=labels,update_collection = update_collection)
-        #print output.get_shape()
-        output = ResidualBlock('Discriminator.4', 128, 256, 3, output, resample='down', labels=labels,update_collection = update_collection)
-        #print output.get_shape()
+        #output = OptimizedResBlockDisc1(output, 64, update_collection = update_collection, spectralnorm = True)
+        output = ResidualBlock('Discriminator.2', 3, 64, 3, output, resample='down', labels=labels, spectralnorm = False,\
+                               update_collection = update_collection)
+        output = ResidualBlock('Discriminator.3', 64, 128, 3, output, resample='down', labels=labels, spectralnorm = False,\
+                               update_collection = update_collection)
+        output = ResidualBlock('Discriminator.4', 128, 256, 3, output, resample='down', labels=labels, spectralnorm = False,\
+                               update_collection = update_collection)
         label_one_hot = tf.one_hot(labels, 1000)
-        embed = lib.ops.linear.Linear('Discriminator.embed', 1000, 128, label_one_hot, spectralnorm = True,update_collection = update_collection)
+        embed = lib.ops.linear.Linear('Discriminator.embed', 1000, 128, label_one_hot, spectralnorm = False, \
+                                      update_collection = update_collection)
         embed = tf.reshape(embed, [-1, 128, 1, 1])
         embed_tiled = tf.tile(embed, [1, 1, 16, 16])  # shape (3, 1)
-        #print output.get_shape()
         output = tf.concat([output,embed_tiled] , axis=1)
-        #print output.get_shape()
-        output = ResidualBlock('Discriminator.6', 384, 512, 3, output, resample='down', labels=labels,update_collection = update_collection)
-        output = ResidualBlock('Discriminator.7', 512, 1024, 3, output, resample='down', labels=labels,update_collection = update_collection)
-        output = ResidualBlock('Discriminator.8', 1024, 1024, 3, output, resample=None, labels=labels,update_collection = update_collection)
-        #print output.get_shape()
+        output = ResidualBlock('Discriminator.6', 384, 512, 3, output, resample='down', labels=labels, \
+                               spectralnorm = False,update_collection = update_collection)
+        output = ResidualBlock('Discriminator.7', 512, 1024, 3, output, resample='down', labels=labels, \
+                               spectralnorm = False,update_collection = update_collection)
+        output = ResidualBlock('Discriminator.8', 1024, 1024, 3, output, resample=None, labels=labels, \
+                               spectralnorm = False,update_collection = update_collection)
+
         output = tf.reduce_sum(output, axis=[2,3])
-        #print output.get_shape()
         output = nonlinearity(output)
-        output_wgan = lib.ops.linear.Linear('Discriminator.Output', 1024, 1, output, spectralnorm = True,update_collection = update_collection)
+        output_wgan = lib.ops.linear.Linear('Discriminator.Output', 1024, 1, output, spectralnorm = False,\
+                                            update_collection = update_collection)
         output_wgan = tf.reshape(output_wgan, [-1])
         if CONDITIONAL and ACGAN:
             output_acgan = lib.ops.linear.Linear('Discriminator.ACGANOutput', DIM_D, 10, output)
