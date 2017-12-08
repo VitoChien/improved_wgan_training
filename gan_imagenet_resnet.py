@@ -211,33 +211,6 @@ def Generator(n_samples, labels, noise=None):
     output = tf.tanh(output)
     return tf.reshape(output, [-1, OUTPUT_DIM])
 
-def Generator_Imagenet(n_samples, labels, noise=None):
-    with tf.variable_scope("Generator"):
-        update_collection = None
-        if noise is None:
-            noise = tf.random_normal([n_samples, 128])
-        output = lib.ops.linear.Linear('Generator.Input', 128, 4*4*1024, noise,spectralnorm = True, \
-                                       update_collection = update_collection)
-        output = tf.reshape(output, [-1, 1024, 4, 4])
-        #print output.get_shape()
-        output = ResidualBlock('Generator.1', 1024, 1024, 3, output, resample='up', labels=labels, spectralnorm = True, \
-                               update_collection = update_collection)
-        output = ResidualBlock('Generator.2', 1024, 512, 3, output, resample='up', labels=labels, spectralnorm = True, \
-                               update_collection = update_collection)
-        output = ResidualBlock('Generator.3', 512, 256, 3, output, resample='up', labels=labels, spectralnorm = True, \
-                               update_collection = update_collection)
-        output = ResidualBlock('Generator.4', 256, 128, 3, output, resample='up', labels=labels, spectralnorm = True, \
-                               update_collection = update_collection)
-        output = ResidualBlock('Generator.5', 128, 64, 3, output, resample='up', labels=labels, spectralnorm = True, \
-                               update_collection = update_collection)
-        #output = Normalize('Generator.OutputN', output, labels=labels)
-        output = Normalize('Generator.mid', output)
-        output = nonlinearity(output)
-        output = lib.ops.conv2d.Conv2D('Generator.Output', 64, 3, 3, output, he_init=False, spectralnorm = True, \
-                                       update_collection = update_collection)
-        output = tf.tanh(output)
-        return tf.reshape(output, [-1, OUTPUT_DIM])
-
 def Discriminator(inputs, labels):
     output = tf.reshape(inputs, [-1, 3, 32, 32])
     output = OptimizedResBlockDisc1(output)
@@ -254,33 +227,62 @@ def Discriminator(inputs, labels):
     else:
         return output_wgan, None
 
+def Generator_Imagenet(n_samples, labels, noise=None):
+    spectralnorm_flag = False
+    with tf.variable_scope("Generator"):
+        update_collection = None
+        if noise is None:
+            noise = tf.random_normal([n_samples, 128])
+        output = lib.ops.linear.Linear('Generator.Input', 128, 4*4*1024, noise,spectralnorm = spectralnorm_flag, \
+                                       update_collection = update_collection)
+        output = tf.reshape(output, [-1, 1024, 4, 4])
+        #print output.get_shape()
+        output = ResidualBlock('Generator.1', 1024, 1024, 3, output, resample='up', labels=labels, spectralnorm = spectralnorm_flag, \
+                               update_collection = update_collection)
+        output = ResidualBlock('Generator.2', 1024, 512, 3, output, resample='up', labels=labels, spectralnorm = spectralnorm_flag, \
+                               update_collection = update_collection)
+        output = ResidualBlock('Generator.3', 512, 256, 3, output, resample='up', labels=labels, spectralnorm = spectralnorm_flag, \
+                               update_collection = update_collection)
+        output = ResidualBlock('Generator.4', 256, 128, 3, output, resample='up', labels=labels, spectralnorm = spectralnorm_flag, \
+                               update_collection = update_collection)
+        output = ResidualBlock('Generator.5', 128, 64, 3, output, resample='up', labels=labels, spectralnorm = spectralnorm_flag, \
+                               update_collection = update_collection)
+        #output = Normalize('Generator.OutputN', output, labels=labels)
+        output = Normalize('Generator.mid', output)
+        output = nonlinearity(output)
+        output = lib.ops.conv2d.Conv2D('Generator.Output', 64, 3, 3, output, he_init=False, spectralnorm = spectralnorm_flag, \
+                                       update_collection = update_collection)
+        output = tf.tanh(output)
+        return tf.reshape(output, [-1, OUTPUT_DIM])
+
 def Discriminator_Imagenet(inputs, labels):
+    spectralnorm_flag = True
     with tf.variable_scope("Discriminator"):
         update_collection = tf.GraphKeys.UPDATE_OPS
         output = tf.reshape(inputs, [-1, 3, 128, 128])
         #output = OptimizedResBlockDisc1(output, 64, update_collection = update_collection, spectralnorm = True)
-        output = ResidualBlock('Discriminator.2', 3, 64, 3, output, resample='down', labels=labels, spectralnorm = False,\
+        output = ResidualBlock('Discriminator.2', 3, 64, 3, output, resample='down', labels=labels, spectralnorm = spectralnorm_flag,\
                                update_collection = update_collection)
-        output = ResidualBlock('Discriminator.3', 64, 128, 3, output, resample='down', labels=labels, spectralnorm = False,\
+        output = ResidualBlock('Discriminator.3', 64, 128, 3, output, resample='down', labels=labels, spectralnorm = spectralnorm_flag,\
                                update_collection = update_collection)
-        output = ResidualBlock('Discriminator.4', 128, 256, 3, output, resample='down', labels=labels, spectralnorm = False,\
+        output = ResidualBlock('Discriminator.4', 128, 256, 3, output, resample='down', labels=labels, spectralnorm = spectralnorm_flag,\
                                update_collection = update_collection)
         label_one_hot = tf.one_hot(labels, 1000)
-        embed = lib.ops.linear.Linear('Discriminator.embed', 1000, 128, label_one_hot, spectralnorm = False, \
+        embed = lib.ops.linear.Linear('Discriminator.embed', 1000, 128, label_one_hot, spectralnorm = spectralnorm_flag, \
                                       update_collection = update_collection)
         embed = tf.reshape(embed, [-1, 128, 1, 1])
         embed_tiled = tf.tile(embed, [1, 1, 16, 16])  # shape (3, 1)
         output = tf.concat([output,embed_tiled] , axis=1)
         output = ResidualBlock('Discriminator.6', 384, 512, 3, output, resample='down', labels=labels, \
-                               spectralnorm = False,update_collection = update_collection)
+                               spectralnorm = spectralnorm_flag,update_collection = update_collection)
         output = ResidualBlock('Discriminator.7', 512, 1024, 3, output, resample='down', labels=labels, \
-                               spectralnorm = False,update_collection = update_collection)
+                               spectralnorm = spectralnorm_flag,update_collection = update_collection)
         output = ResidualBlock('Discriminator.8', 1024, 1024, 3, output, resample=None, labels=labels, \
-                               spectralnorm = False,update_collection = update_collection)
+                               spectralnorm = spectralnorm_flag,update_collection = update_collection)
 
         output = tf.reduce_sum(output, axis=[2,3])
         output = nonlinearity(output)
-        output_wgan = lib.ops.linear.Linear('Discriminator.Output', 1024, 1, output, spectralnorm = False,\
+        output_wgan = lib.ops.linear.Linear('Discriminator.Output', 1024, 1, output, spectralnorm = spectralnorm_flag,\
                                             update_collection = update_collection)
         output_wgan = tf.reshape(output_wgan, [-1])
         if CONDITIONAL and ACGAN:
@@ -331,7 +333,12 @@ with tf.Session() as session:
             disc_all, disc_all_acgan = Discriminator_Imagenet(real_and_fake_data, real_and_fake_labels)
             disc_real = disc_all[:BATCH_SIZE/len(DEVICES_A)]
             disc_fake = disc_all[BATCH_SIZE/len(DEVICES_A):]
-            disc_costs.append(tf.reduce_mean(disc_fake) - tf.reduce_mean(disc_real))
+            #disc_costs.append(tf.reduce_mean(disc_fake) - tf.reduce_mean(disc_real))
+
+            discriminator_loss_real = tf.reduce_mean(tf.minimum(0., -1. + disc_real))
+            discriminator_loss_fake = tf.reduce_mean(tf.minimum(0., -1. - disc_fake))
+
+            disc_costs.append(discriminator_loss_real + discriminator_loss_fake)
             if CONDITIONAL and ACGAN:
                 disc_acgan_costs.append(tf.reduce_mean(
                     tf.nn.sparse_softmax_cross_entropy_with_logits(logits=disc_all_acgan[:BATCH_SIZE/len(DEVICES_A)], labels=real_and_fake_labels[:BATCH_SIZE/len(DEVICES_A)])
@@ -355,11 +362,12 @@ with tf.Session() as session:
                     )
                 ))
 
-
     for i, device in enumerate(DEVICES_B):
         with tf.device(device):
             real_data = tf.concat([all_real_data_splits[i], all_real_data_splits[len(DEVICES_A)+i]], axis=0)
             fake_data = tf.concat([fake_data_splits[i], fake_data_splits[len(DEVICES_A)+i]], axis=0)
+
+    '''
             labels = tf.concat([
                 labels_splits[i], 
                 labels_splits[len(DEVICES_A)+i],
@@ -375,6 +383,7 @@ with tf.Session() as session:
             slopes = tf.sqrt(tf.reduce_sum(tf.square(gradients), reduction_indices=[1]))
             gradient_penalty = 10*tf.reduce_mean((slopes-1.)**2)
             disc_costs.append(gradient_penalty)
+    '''
 
     disc_wgan = tf.add_n(disc_costs) / len(DEVICES_A)
     if CONDITIONAL and ACGAN:
