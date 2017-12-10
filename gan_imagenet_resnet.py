@@ -304,7 +304,7 @@ with tf.Session() as session:
     fake_data_splits = []
     for i, device in enumerate(DEVICES):
         with tf.device(device):
-            fake_data_splits.append(Generator_Imagenet(BATCH_SIZE/len(DEVICES), labels_splits[i]))
+            fake_data_splits.append(Generator_Imagenet(BATCH_SIZE/len(DEVICES), labels_splits[i], is_training = True))
 
     all_real_data = tf.reshape(2*((tf.cast(all_real_data_int, tf.float32)/256.)-.5), [BATCH_SIZE, OUTPUT_DIM])
     all_real_data += tf.random_uniform(shape=[BATCH_SIZE,OUTPUT_DIM],minval=0.,maxval=1./128) # dequantize
@@ -436,13 +436,13 @@ with tf.Session() as session:
             n_samples = GEN_BS_MULTIPLE * BATCH_SIZE / len(DEVICES)
             fake_labels = tf.cast(tf.random_uniform([n_samples])*1000, tf.int32)
             if CONDITIONAL and ACGAN:
-                disc_fake, disc_fake_acgan = Discriminator_Imagenet(Generator_Imagenet(n_samples,fake_labels), fake_labels, update_collection="NO_OPS")
+                disc_fake, disc_fake_acgan = Discriminator_Imagenet(Generator_Imagenet(n_samples,fake_labels, is_training = True), fake_labels, update_collection="NO_OPS")
                 gen_costs.append(-tf.reduce_mean(disc_fake))
                 gen_acgan_costs.append(tf.reduce_mean(
                     tf.nn.sparse_softmax_cross_entropy_with_logits(logits=disc_fake_acgan, labels=fake_labels)
                 ))
             else:
-                gen_costs.append(-tf.reduce_mean(Discriminator_Imagenet(Generator_Imagenet(n_samples, fake_labels), fake_labels, update_collection="NO_OPS")[0]))
+                gen_costs.append(-tf.reduce_mean(Discriminator_Imagenet(Generator_Imagenet(n_samples, fake_labels, is_training = True), fake_labels, update_collection="NO_OPS")[0]))
     gen_cost = (tf.add_n(gen_costs) / len(DEVICES))
     if CONDITIONAL and ACGAN:
         gen_cost += (ACGAN_SCALE_G*(tf.add_n(gen_acgan_costs) / len(DEVICES)))
@@ -469,12 +469,12 @@ with tf.Session() as session:
         samples = session.run(fixed_noise_samples)
         print samples
         samples = ((samples+1.)*(255./2)).astype('int32')
-        lib.save_images.save_images(samples.reshape((100, 3, 128, 128)), 'samples_{}.png'.format(frame))
+        lib.save_images.save_images(samples.reshape((100, 3, 128, 128)), 'generate_per_100', 'samples_{}.png'.format(frame))
 
     def display_imgs(prefix, frame, true_dist):
         #print true_dist
         img = ((true_dist+1.)*(255./2)).astype('int32')
-        lib.save_images.save_images(img.reshape((-1, 3, 128, 128)), prefix + '_samples_{}.png'.format(frame))
+        lib.save_images.save_images(img.reshape((-1, 3, 128, 128)), 'mid', prefix + '_samples_{}.png'.format(frame))
     '''
     def display_imgs(frame, true_dist):
         img = ((true_dist)*(255.)).astype('int32')

@@ -6,8 +6,9 @@ import numpy as np
 import scipy.misc
 from scipy.misc import imsave
 import cv2
+import os
 
-def save_images(X, save_path):
+def save_images(X, save_path, file_name):
     # [0, 1] -> [0,255]
     if isinstance(X.flatten()[0], np.floating):
         X = (255.99*X).astype('uint8')
@@ -36,5 +37,8 @@ def save_images(X, save_path):
         i = n%nw
         img[j*h:j*h+h, i*w:i*w+w] = x
         #print x
-    cv2.imwrite(save_path, img)
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
+
+    cv2.imwrite(os.path.join(save_path,file_name), img)
     #imsave(save_path, img)

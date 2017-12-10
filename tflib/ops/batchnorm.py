@@ -3,7 +3,7 @@ import tflib as lib
 import numpy as np
 import tensorflow as tf
 
-def Batchnorm(name, inputs, is_training=None, momentum=0.9, epsilon=2e-5, in_place_update=True):
+def Batchnorm(name, input, is_training=None, momentum=0.9, epsilon=2e-5, in_place_update=True):
     if in_place_update:
         result = tf.contrib.layers.batch_norm(input,
                                               decay=momentum,

@@ -5,6 +5,7 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gan_imagenet_resnet.py" afterPath="$PROJECT_DIR$/gan_imagenet_resnet.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tflib/ops/batchnorm.py" afterPath="$PROJECT_DIR$/tflib/ops/batchnorm.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tflib/save_images.py" afterPath="$PROJECT_DIR$/tflib/save_images.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -19,9 +20,21 @@
       <file leaf-file-name="gan_imagenet_resnet.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gan_imagenet_resnet.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="620">
-              <caret line="101" column="51" lean-forward="true" selection-start-line="101" selection-start-column="51" selection-end-line="101" selection-end-column="51" />
+            <state relative-caret-position="250">
+              <caret line="471" column="87" lean-forward="false" selection-start-line="471" selection-start-column="87" selection-end-line="471" selection-end-column="87" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="save_images.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tflib/save_images.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="837">
+              <caret line="42" column="49" lean-forward="false" selection-start-line="42" selection-start-column="49" selection-end-line="42" selection-end-column="49" />
+              <folding>
+                <element signature="e#73#91#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -39,8 +52,8 @@
       <file leaf-file-name="batchnorm.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tflib/ops/batchnorm.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="20">
-              <caret line="4" column="0" lean-forward="true" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+            <state relative-caret-position="40">
+              <caret line="5" column="25" lean-forward="false" selection-start-line="5" selection-start-column="25" selection-end-line="5" selection-end-column="25" />
               <folding />
             </state>
           </provider>
@@ -94,7 +107,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>spectral</find>
       <find>fused</find>
       <find>weightnorm</find>
       <find>adam</find>
@@ -122,8 +134,9 @@
       <find>conditional_instance_normed</find>
       <find>spectralnorm</find>
       <find>Discriminator_Imagenet</find>
-      <find>is_training</find>
       <find>batchnorm</find>
+      <find>is_training</find>
+      <find>generator_im</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -140,11 +153,11 @@
         <option value="$PROJECT_DIR$/tflib/Imagenet.py" />
         <option value="$PROJECT_DIR$/tflib/imagenet.py" />
         <option value="$PROJECT_DIR$/gan_cifar_resnet.py" />
-        <option value="$PROJECT_DIR$/tflib/save_images.py" />
         <option value="$PROJECT_DIR$/tflib/ops/sn.py" />
         <option value="$PROJECT_DIR$/tflib/ops/linear.py" />
         <option value="$PROJECT_DIR$/tflib/ops/conv2d.py" />
         <option value="$PROJECT_DIR$/tflib/ops/batchnorm.py" />
+        <option value="$PROJECT_DIR$/tflib/save_images.py" />
         <option value="$PROJECT_DIR$/gan_imagenet_resnet.py" />
       </list>
     </option>
@@ -427,16 +440,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tflib/save_images.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="9" column="4" lean-forward="false" selection-start-line="9" selection-start-column="4" selection-end-line="9" selection-end-column="4" />
-          <folding>
-            <element signature="e#73#91#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/local/lib/python2.7/dist-packages/tensorflow/python/training/adam.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="310">
@@ -509,16 +512,26 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tflib/ops/batchnorm.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="20">
-          <caret line="4" column="0" lean-forward="true" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+        <state relative-caret-position="40">
+          <caret line="5" column="25" lean-forward="false" selection-start-line="5" selection-start-column="25" selection-end-line="5" selection-end-column="25" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tflib/save_images.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="837">
+          <caret line="42" column="49" lean-forward="false" selection-start-line="42" selection-start-column="49" selection-end-line="42" selection-end-column="49" />
+          <folding>
+            <element signature="e#73#91#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gan_imagenet_resnet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="620">
-          <caret line="101" column="51" lean-forward="true" selection-start-line="101" selection-start-column="51" selection-end-line="101" selection-end-column="51" />
+        <state relative-caret-position="250">
+          <caret line="471" column="87" lean-forward="false" selection-start-line="471" selection-start-column="87" selection-end-line="471" selection-end-column="87" />
           <folding />
         </state>
       </provider>
