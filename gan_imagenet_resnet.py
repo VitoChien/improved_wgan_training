@@ -94,16 +94,17 @@ def Normalize(name, inputs,labels=None,is_training=None):
             return lib.ops.layernorm.Layernorm(name,[1,2,3],inputs,labels=labels,n_labels=10)
         """
         #return lib.ops.layernorm.Layernorm(name,[1,2,3],inputs)
-        return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
+        #return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
+        return lib.ops.batchnorm.Batchnorm(name,inputs)
     elif ('Generator' in name) and ('mid' in name) and NORMALIZATION_G:
         #print name
-        return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True, is_training = is_training)
+        return lib.ops.batchnorm.Batchnorm(name,inputs,is_training = is_training)
     elif ('Generator' in name) and NORMALIZATION_G:
         if labels is not None:
             #print("##################################################")
             return lib.ops.cond_batchnorm.Batchnorm(name,[0,2,3],inputs,labels=labels,n_labels=1000)
         else:
-            return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True, is_training = is_training)
+            return lib.ops.batchnorm.Batchnorm(name,inputs,is_training = is_training)
     else:
         return inputs
 

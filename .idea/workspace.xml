@@ -4,6 +4,7 @@
     <list default="true" id="70fce5a2-6480-463b-a9e1-98eb866874f6" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gan_imagenet_resnet.py" afterPath="$PROJECT_DIR$/gan_imagenet_resnet.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tflib/ops/batchnorm.py" afterPath="$PROJECT_DIR$/tflib/ops/batchnorm.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -18,8 +19,8 @@
       <file leaf-file-name="gan_imagenet_resnet.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gan_imagenet_resnet.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="910">
-              <caret line="443" column="155" lean-forward="false" selection-start-line="443" selection-start-column="155" selection-end-line="443" selection-end-column="155" />
+            <state relative-caret-position="620">
+              <caret line="101" column="51" lean-forward="true" selection-start-line="101" selection-start-column="51" selection-end-line="101" selection-end-column="51" />
               <folding />
             </state>
           </provider>
@@ -38,8 +39,8 @@
       <file leaf-file-name="batchnorm.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tflib/ops/batchnorm.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1040">
-              <caret line="55" column="58" lean-forward="false" selection-start-line="55" selection-start-column="58" selection-end-line="55" selection-end-column="58" />
+            <state relative-caret-position="20">
+              <caret line="4" column="0" lean-forward="true" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -93,7 +94,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>spectral_normed</find>
       <find>spectral</find>
       <find>fused</find>
       <find>weightnorm</find>
@@ -123,6 +123,7 @@
       <find>spectralnorm</find>
       <find>Discriminator_Imagenet</find>
       <find>is_training</find>
+      <find>batchnorm</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -508,16 +509,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tflib/ops/batchnorm.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1040">
-          <caret line="55" column="58" lean-forward="false" selection-start-line="55" selection-start-column="58" selection-end-line="55" selection-end-column="58" />
+        <state relative-caret-position="20">
+          <caret line="4" column="0" lean-forward="true" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gan_imagenet_resnet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="910">
-          <caret line="443" column="155" lean-forward="false" selection-start-line="443" selection-start-column="155" selection-end-line="443" selection-end-column="155" />
+        <state relative-caret-position="620">
+          <caret line="101" column="51" lean-forward="true" selection-start-line="101" selection-start-column="51" selection-end-line="101" selection-end-column="51" />
           <folding />
         </state>
       </provider>
