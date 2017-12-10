@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="70fce5a2-6480-463b-a9e1-98eb866874f6" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gan_imagenet_resnet.py" afterPath="$PROJECT_DIR$/gan_imagenet_resnet.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,8 +18,8 @@
       <file leaf-file-name="gan_imagenet_resnet.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gan_imagenet_resnet.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="260">
-              <caret line="340" column="28" lean-forward="false" selection-start-line="340" selection-start-column="28" selection-end-line="340" selection-end-column="28" />
+            <state relative-caret-position="910">
+              <caret line="443" column="155" lean-forward="false" selection-start-line="443" selection-start-column="155" selection-end-line="443" selection-end-column="155" />
               <folding />
             </state>
           </provider>
@@ -27,8 +28,8 @@
       <file leaf-file-name="cond_batchnorm.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tflib/ops/cond_batchnorm.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="20">
-              <caret line="4" column="0" lean-forward="true" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+            <state relative-caret-position="40">
+              <caret line="5" column="50" lean-forward="false" selection-start-line="5" selection-start-column="46" selection-end-line="5" selection-end-column="50" />
               <folding />
             </state>
           </provider>
@@ -37,8 +38,8 @@
       <file leaf-file-name="batchnorm.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tflib/ops/batchnorm.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="30" column="22" lean-forward="false" selection-start-line="30" selection-start-column="22" selection-end-line="30" selection-end-column="22" />
+            <state relative-caret-position="1040">
+              <caret line="55" column="58" lean-forward="false" selection-start-line="55" selection-start-column="58" selection-end-line="55" selection-end-column="58" />
               <folding />
             </state>
           </provider>
@@ -47,8 +48,8 @@
       <file leaf-file-name="linear.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tflib/ops/linear.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="294">
-              <caret line="43" column="38" lean-forward="false" selection-start-line="43" selection-start-column="38" selection-end-line="43" selection-end-column="38" />
+            <state relative-caret-position="278">
+              <caret line="27" column="4" lean-forward="false" selection-start-line="27" selection-start-column="4" selection-end-line="27" selection-end-column="4" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
               </folding>
@@ -69,8 +70,8 @@
       <file leaf-file-name="conv2d.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tflib/ops/conv2d.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="520">
-              <caret line="32" column="38" lean-forward="false" selection-start-line="32" selection-start-column="38" selection-end-line="32" selection-end-column="38" />
+            <state relative-caret-position="2030">
+              <caret line="106" column="23" lean-forward="false" selection-start-line="106" selection-start-column="11" selection-end-line="106" selection-end-column="23" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
               </folding>
@@ -92,11 +93,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>display_imgs</find>
-      <find>_disc_wgan</find>
-      <find>_disc_cost</find>
-      <find>Conv2D</find>
-      <find>pixel_means</find>
       <find>spectral_normed</find>
       <find>spectral</find>
       <find>fused</find>
@@ -104,24 +100,29 @@
       <find>adam</find>
       <find>GEN_BS_MULTIPLE</find>
       <find>filters</find>
-      <find>spectralnorm</find>
       <find>he_init</find>
       <find>update_collection</find>
       <find>scope</find>
       <find>.reuse</find>
-      <find>Discriminator_Imagenet</find>
       <find>with tf.variable_scope(</find>
       <find>_fake_data</find>
       <find>disc_cost</find>
       <find>fake_data_splits</find>
       <find>u</find>
       <find>fake_data</find>
-      <find>is_training</find>
       <find>Normalize</find>
       <find>Generator_Imagenet</find>
       <find>disc_wgan</find>
       <find>costs</find>
       <find>disc_costs</find>
+      <find>DIM_G</find>
+      <find>DIM_D</find>
+      <find>NORMALIZATION_G</find>
+      <find>NORMALIZATION_D</find>
+      <find>conditional_instance_normed</find>
+      <find>spectralnorm</find>
+      <find>Discriminator_Imagenet</find>
+      <find>is_training</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -142,6 +143,7 @@
         <option value="$PROJECT_DIR$/tflib/ops/sn.py" />
         <option value="$PROJECT_DIR$/tflib/ops/linear.py" />
         <option value="$PROJECT_DIR$/tflib/ops/conv2d.py" />
+        <option value="$PROJECT_DIR$/tflib/ops/batchnorm.py" />
         <option value="$PROJECT_DIR$/gan_imagenet_resnet.py" />
       </list>
     </option>
@@ -429,7 +431,7 @@
         <state relative-caret-position="180">
           <caret line="9" column="4" lean-forward="false" selection-start-line="9" selection-start-column="4" selection-end-line="9" selection-end-column="4" />
           <folding>
-            <element signature="e#73#91#0" expanded="true" />
+            <element signature="e#73#91#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -468,26 +470,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tflib/ops/conv2d.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="520">
-          <caret line="32" column="38" lean-forward="false" selection-start-line="32" selection-start-column="38" selection-end-line="32" selection-end-column="38" />
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tflib/ops/linear.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="294">
-          <caret line="43" column="38" lean-forward="false" selection-start-line="43" selection-start-column="38" selection-end-line="43" selection-end-column="38" />
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gan_cifar_resnet.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="290">
@@ -496,26 +478,46 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/tflib/ops/linear.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="278">
+          <caret line="27" column="4" lean-forward="false" selection-start-line="27" selection-start-column="4" selection-end-line="27" selection-end-column="4" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tflib/ops/conv2d.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2030">
+          <caret line="106" column="23" lean-forward="false" selection-start-line="106" selection-start-column="11" selection-end-line="106" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/tflib/ops/cond_batchnorm.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="20">
-          <caret line="4" column="0" lean-forward="true" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+        <state relative-caret-position="40">
+          <caret line="5" column="50" lean-forward="false" selection-start-line="5" selection-start-column="46" selection-end-line="5" selection-end-column="50" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tflib/ops/batchnorm.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="30" column="22" lean-forward="false" selection-start-line="30" selection-start-column="22" selection-end-line="30" selection-end-column="22" />
+        <state relative-caret-position="1040">
+          <caret line="55" column="58" lean-forward="false" selection-start-line="55" selection-start-column="58" selection-end-line="55" selection-end-column="58" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gan_imagenet_resnet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="260">
-          <caret line="340" column="28" lean-forward="false" selection-start-line="340" selection-start-column="28" selection-end-line="340" selection-end-column="28" />
+        <state relative-caret-position="910">
+          <caret line="443" column="155" lean-forward="false" selection-start-line="443" selection-start-column="155" selection-end-line="443" selection-end-column="155" />
           <folding />
         </state>
       </provider>
