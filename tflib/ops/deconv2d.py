@@ -2,6 +2,7 @@ import tflib as lib
 
 import numpy as np
 import tensorflow as tf
+from sn import spectral_normed_weight
 
 _default_weightnorm = False
 def enable_default_weightnorm():
@@ -25,6 +26,8 @@ def Deconv2D(
     inputs, 
     he_init=True,
     weightnorm=None,
+    spectralnorm = False,
+    update_collection = None,
     biases=True,
     gain=1.,
     mask_type=None,
@@ -85,6 +88,8 @@ def Deconv2D(
                 norms = tf.sqrt(tf.reduce_sum(tf.square(filters), reduction_indices=[0,1,3]))
                 filters = filters * tf.expand_dims(target_norms / norms, 1)
 
+        if spectralnorm:
+            filters = spectral_normed_weight(W = filters, update_collection=update_collection)
 
         inputs = tf.transpose(inputs, [0,2,3,1], name='NCHW_to_NHWC')
 

@@ -7,6 +7,7 @@ import tflib as lib
 import tflib.ops.linear
 import tflib.ops.cond_batchnorm
 import tflib.ops.conv2d
+import tflib.ops.deconv2d
 import tflib.ops.batchnorm
 import tflib.save_images
 import tflib.cifar10
@@ -46,13 +47,13 @@ ITERS = 100000 # How many iterations to train for
 DIM_G = 128 # Generator dimensionality
 DIM_D = 128 # Critic dimensionality
 NORMALIZATION_G = True # Use batchnorm in generator?
-NORMALIZATION_D = True # Use batchnorm (or layernorm) in critic?
+NORMALIZATION_D = False # Use batchnorm (or layernorm) in critic?
 #OUTPUT_DIM = 3072 # Number of pixels in CIFAR10 (32*32*3)
 OUTPUT_DIM = 49152 # Number of pixels in Imagenet (128*128*3)
 LR = 2e-4 # Initial learning rate
 DECAY = True # Whether to decay LR over learning
 N_CRITIC = 5 # Critic steps per generator steps
-INCEPTION_FREQUENCY = 1000 # How frequently to calculate Inception score
+INCEPTION_FREQUENCY = 2500 # How frequently to calculate Inception score
 
 CONDITIONAL = True # Whether to train a conditional or unconditional model
 spectral_normed = True
@@ -74,8 +75,11 @@ DEVICES = ['/gpu:0','/gpu:1']
 
 lib.print_model_settings(locals().copy())
 
-def nonlinearity(x):
+def relu(x):
     return tf.nn.relu(x)
+
+def lrelu(x):
+    return tf.nn.leaky_relu(x)
 
 def Normalize(name, inputs,labels=None,is_training=None):
     """This is messy, but basically it chooses between batchnorm, layernorm, 
@@ -95,16 +99,16 @@ def Normalize(name, inputs,labels=None,is_training=None):
         """
         #return lib.ops.layernorm.Layernorm(name,[1,2,3],inputs)
         #return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
-        return lib.ops.batchnorm.Batchnorm(name,inputs)
+        return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
     elif ('Generator' in name) and ('mid' in name) and NORMALIZATION_G:
         #print name
-        return lib.ops.batchnorm.Batchnorm(name,inputs,is_training = is_training)
+        return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
     elif ('Generator' in name) and NORMALIZATION_G:
         if labels is not None:
             #print("##################################################")
             return lib.ops.cond_batchnorm.Batchnorm(name,[0,2,3],inputs,labels=labels,n_labels=1000)
         else:
-            return lib.ops.batchnorm.Batchnorm(name,inputs,is_training = is_training)
+            return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
     else:
         return inputs
 
@@ -119,6 +123,14 @@ def Normalize(name, inputs,labels=None,is_training=None):
     else:
         return inputs
     """
+
+def SubpixelConv2D(*args, **kwargs):
+    kwargs['output_dim'] = 4*kwargs['output_dim']
+    output = lib.ops.conv2d.Conv2D(*args, **kwargs)
+    output = tf.transpose(output, [0,2,3,1])
+    output = tf.depth_to_space(output, 2)
+    output = tf.transpose(output, [0,3,1,2])
+    return output
 
 def ConvMeanPool(name, input_dim, output_dim, filter_size, inputs, he_init=True, biases=True, spectralnorm=False, update_collection = None):
     output = lib.ops.conv2d.Conv2D(name, input_dim, output_dim, filter_size, inputs, he_init=he_init, biases=biases,\
@@ -143,7 +155,8 @@ def UpsampleConv(name, input_dim, output_dim, filter_size, inputs, he_init=True,
             spectralnorm = spectralnorm, update_collection = update_collection)
     return output
 
-def ResidualBlock(name, input_dim, output_dim, filter_size, inputs, resample=None, no_dropout=False, labels=None, update_collection = None,spectralnorm = False, is_training = None):
+def ResidualBlock(name, input_dim, output_dim, filter_size, inputs, resample=None, no_dropout=False, labels=None, \
+                  update_collection = None,spectralnorm = False, is_training = None, he_init=True):
     """
     resample: None, 'down', or 'up'
     """
@@ -176,13 +189,22 @@ def ResidualBlock(name, input_dim, output_dim, filter_size, inputs, resample=Non
 
     output = inputs
     output = Normalize(name+'.N1', output, labels=labels, is_training = is_training)
-    output = nonlinearity(output)
-    output = conv_1(name+'.Conv1', filter_size=filter_size, inputs=output)
+    if 'Discriminator' in name:
+        output = lrelu(output)
+    if 'Generator' in name:
+        output = relu(output)
+    output = conv_1(name+'.Conv1', filter_size=filter_size, inputs=output, he_init=he_init, biases=False, spectralnorm=spectralnorm, \
+                                      update_collection=update_collection)
     output = Normalize(name+'.N2', output, labels=labels, is_training = is_training)
-    output = nonlinearity(output)            
-    output = conv_2(name+'.Conv2', filter_size=filter_size, inputs=output)
+    if 'Discriminator' in name:
+        output = lrelu(output)
+    if 'Generator' in name:
+        output = relu(output)
+    output = conv_2(name+'.Conv2', filter_size=filter_size, inputs=output, he_init=he_init, spectralnorm=spectralnorm, \
+                                      update_collection=update_collection)
 
     return shortcut + output
+
 
 def OptimizedResBlockDisc1(inputs, output_dim,update_collection = True,spectralnorm = True):
     conv_1        = functools.partial(lib.ops.conv2d.Conv2D, input_dim=3, output_dim=output_dim, spectralnorm=spectralnorm, \
@@ -219,7 +241,7 @@ def Discriminator(inputs, labels):
     output = ResidualBlock('Discriminator.2', DIM_D, DIM_D, 3, output, resample='down', labels=labels)
     output = ResidualBlock('Discriminator.3', DIM_D, DIM_D, 3, output, resample=None, labels=labels)
     output = ResidualBlock('Discriminator.4', DIM_D, DIM_D, 3, output, resample=None, labels=labels)
-    output = nonlinearity(output)
+    output = lrelu(output)
     output = tf.reduce_mean(output, axis=[2,3])
     output_wgan = lib.ops.linear.Linear('Discriminator.Output', DIM_D, 1, output)
     output_wgan = tf.reshape(output_wgan, [-1])
@@ -251,11 +273,12 @@ def Generator_Imagenet(n_samples, labels, noise=None, is_training = None):
                                update_collection = update_collection)
         #output = Normalize('Generator.OutputN', output, labels=labels)
         output = Normalize('Generator.mid', output, is_training)
-        output = nonlinearity(output)
-        output = lib.ops.conv2d.Conv2D('Generator.Output', 64, 3, 3, output, he_init=False, spectralnorm = spectralnorm_flag, \
+        output = relu(output)
+        output = lib.ops.conv2d.Conv2D('Generator.Output', 64, 3, 3, output, spectralnorm = spectralnorm_flag, \
                                        update_collection = update_collection)
-        output = tf.tanh(output)
+        output = tf.tanh(output,name = 'Generator_tanh')
         return tf.reshape(output, [-1, OUTPUT_DIM])
+
 
 def Discriminator_Imagenet(inputs, labels, update_collection):
     spectralnorm_flag = True
@@ -269,12 +292,12 @@ def Discriminator_Imagenet(inputs, labels, update_collection):
                                update_collection = update_collection)
         output = ResidualBlock('Discriminator.4', 128, 256, 3, output, resample='down', labels=labels, spectralnorm = spectralnorm_flag,\
                                update_collection = update_collection)
-        label_one_hot = tf.one_hot(labels, 1000)
+        label_one_hot = tf.one_hot(labels, 1000, name = 'Discriminator.onehot')
         embed = lib.ops.linear.Linear('Discriminator.embed', 1000, 128, label_one_hot, spectralnorm = spectralnorm_flag, \
                                       update_collection = update_collection)
         embed = tf.reshape(embed, [-1, 128, 1, 1])
-        embed_tiled = tf.tile(embed, [1, 1, 16, 16])  # shape (3, 1)
-        output = tf.concat([output,embed_tiled] , axis=1)
+        embed_tiled = tf.tile(embed, [1, 1, 16, 16], name = 'Discriminator.embed_tile')  # shape (3, 1)
+        output = tf.concat([output,embed_tiled] , axis=1, name = 'Discriminator.embed_concate')
         output = ResidualBlock('Discriminator.6', 384, 512, 3, output, resample='down', labels=labels, \
                                spectralnorm = spectralnorm_flag,update_collection = update_collection)
         output = ResidualBlock('Discriminator.7', 512, 1024, 3, output, resample='down', labels=labels, \
@@ -282,8 +305,8 @@ def Discriminator_Imagenet(inputs, labels, update_collection):
         output = ResidualBlock('Discriminator.8', 1024, 1024, 3, output, resample=None, labels=labels, \
                                spectralnorm = spectralnorm_flag,update_collection = update_collection)
 
-        output = tf.reduce_sum(output, axis=[2,3])
-        output = nonlinearity(output)
+        output = tf.reduce_sum(output, axis=[2,3], name = 'Discriminator.reduce_sum')
+        output = lrelu(output)
         output_wgan = lib.ops.linear.Linear('Discriminator.Output', 1024, 1, output, spectralnorm = spectralnorm_flag,\
                                             update_collection = update_collection)
         output_wgan = tf.reshape(output_wgan, [-1])
@@ -335,8 +358,8 @@ with tf.Session() as session:
                 labels_splits[i],
                 labels_splits[len(DEVICES_A)+i]
             ], axis=0)
-            disc_real, disc_real_acgan = Discriminator_Imagenet(real_data, real_labels, update_collection=None)
             disc_fake, disc_fake_acgan = Discriminator_Imagenet(fake_data, fake_labels, update_collection="NO_OPS")
+            disc_real, disc_real_acgan = Discriminator_Imagenet(real_data, real_labels, update_collection=None)
             '''
             real_and_fake_data = tf.concat([
                 all_real_data_splits[i], 
@@ -493,6 +516,14 @@ with tf.Session() as session:
         all_samples = ((all_samples+1.)*(255.99/2)).astype('int32')
         all_samples = all_samples.reshape((-1, 3, 32, 32)).transpose(0,2,3,1)
         return lib.inception_score.get_inception_score(list(all_samples))
+    def get_inception_score_Imagenet(n):
+        all_samples = []
+        for i in xrange(n/100):
+            all_samples.append(session.run(samples_100))
+        all_samples = np.concatenate(all_samples, axis=0)
+        all_samples = ((all_samples+1.)*(255.99/2)).astype('int32')
+        all_samples = all_samples.reshape((-1, 3, 128, 128)).transpose(0,2,3,1)
+        return lib.inception_score.get_inception_score(list(all_samples))
 
     #train_gen, dev_gen = lib.cifar10.load(BATCH_SIZE, DATA_DIR)
     train_gen, dev_gen = lib.imagenet.load(BATCH_SIZE, DATA_DIR)
@@ -570,7 +601,7 @@ with tf.Session() as session:
         lib.plot.plot('time', time.time() - start_time)
 
         if iteration % INCEPTION_FREQUENCY == INCEPTION_FREQUENCY-1:
-            inception_score = get_inception_score(50000)
+            inception_score = get_inception_score_Imagenet(50000)
             lib.plot.plot('inception_50k', inception_score[0])
             lib.plot.plot('inception_50k_std', inception_score[1])
         '''
