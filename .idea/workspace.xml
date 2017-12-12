@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="70fce5a2-6480-463b-a9e1-98eb866874f6" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gan_cifar_resnet.py" afterPath="$PROJECT_DIR$/gan_cifar_resnet.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gan_imagenet_resnet.py" afterPath="$PROJECT_DIR$/gan_imagenet_resnet.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tflib/ops/conv2d.py" afterPath="$PROJECT_DIR$/tflib/ops/conv2d.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -16,21 +16,21 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="gan_imagenet_resnet.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="gan_imagenet_resnet.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gan_imagenet_resnet.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="67">
-              <caret line="371" column="0" lean-forward="true" selection-start-line="371" selection-start-column="0" selection-end-line="371" selection-end-column="0" />
+            <state relative-caret-position="4150">
+              <caret line="272" column="53" lean-forward="false" selection-start-line="272" selection-start-column="53" selection-end-line="272" selection-end-column="53" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="gan_cifar_resnet.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="gan_cifar_resnet.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gan_cifar_resnet.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="290">
-              <caret line="455" column="32" lean-forward="false" selection-start-line="455" selection-start-column="24" selection-end-line="455" selection-end-column="32" />
+            <state relative-caret-position="433">
+              <caret line="210" column="26" lean-forward="false" selection-start-line="210" selection-start-column="26" selection-end-line="210" selection-end-column="26" />
               <folding />
             </state>
           </provider>
@@ -39,8 +39,8 @@
       <file leaf-file-name="gan_cifar_resnet_org.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gan_cifar_resnet_org.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2042">
-              <caret line="243" column="18" lean-forward="true" selection-start-line="243" selection-start-column="18" selection-end-line="243" selection-end-column="18" />
+            <state relative-caret-position="412">
+              <caret line="174" column="29" lean-forward="false" selection-start-line="174" selection-start-column="29" selection-end-line="174" selection-end-column="29" />
               <folding />
             </state>
           </provider>
@@ -92,7 +92,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>32</find>
       <find>Imagenet</find>
       <find>INCEPTION_FREQUENCY</find>
       <find>Good</find>
@@ -104,7 +103,6 @@
       <find>Resnet</find>
       <find>_new</find>
       <find>Adversarial</find>
-      <find>conditional_instance_normed</find>
       <find>Normalize</find>
       <find>he_init</find>
       <find>spectral_normed_weight</find>
@@ -120,8 +118,10 @@
       <find>Discriminator</find>
       <find>spectralnorm</find>
       <find>Generator</find>
-      <find>N_CRITIC</find>
       <find>NO_OPS</find>
+      <find>spectral_normed</find>
+      <find>N_CRITIC</find>
+      <find>conditional_instance_normed</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -586,22 +586,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gan_cifar_resnet_org.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2042">
-          <caret line="243" column="18" lean-forward="true" selection-start-line="243" selection-start-column="18" selection-end-line="243" selection-end-column="18" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gan_cifar_resnet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="290">
-          <caret line="455" column="32" lean-forward="false" selection-start-line="455" selection-start-column="24" selection-end-line="455" selection-end-column="32" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tflib/ops/sn.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="80">
@@ -610,10 +594,26 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/gan_cifar_resnet_org.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="412">
+          <caret line="174" column="29" lean-forward="false" selection-start-line="174" selection-start-column="29" selection-end-line="174" selection-end-column="29" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/gan_imagenet_resnet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="67">
-          <caret line="371" column="0" lean-forward="true" selection-start-line="371" selection-start-column="0" selection-end-line="371" selection-end-column="0" />
+        <state relative-caret-position="4150">
+          <caret line="272" column="53" lean-forward="false" selection-start-line="272" selection-start-column="53" selection-end-line="272" selection-end-column="53" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gan_cifar_resnet.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="433">
+          <caret line="210" column="26" lean-forward="false" selection-start-line="210" selection-start-column="26" selection-end-line="210" selection-end-column="26" />
           <folding />
         </state>
       </provider>

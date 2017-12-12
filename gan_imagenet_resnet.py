@@ -56,8 +56,6 @@ N_CRITIC = 5 # Critic steps per generator steps
 INCEPTION_FREQUENCY = 2500 # How frequently to calculate Inception score
 
 CONDITIONAL = True # Whether to train a conditional or unconditional model
-spectral_normed = True
-conditional_instance_normed = True
 ACGAN = False # If CONDITIONAL, whether to use ACGAN or "vanilla" conditioning
 ACGAN_SCALE = 1. # How to scale the critic's ACGAN loss relative to WGAN loss
 ACGAN_SCALE_G = 0.1 # How to scale generator's ACGAN loss relative to WGAN loss
@@ -91,12 +89,6 @@ def Normalize(name, inputs,labels=None,is_training=None):
         labels = None
 
     if ('Discriminator' in name) and NORMALIZATION_D:
-        """
-        if conditional_instance_normed:
-            return lib.ops.cond_batchnorm.Batchnorm(name, [1, 2, 3], inputs, labels=labels, n_labels=1000,is_training=is_training)
-        else:
-            return lib.ops.layernorm.Layernorm(name,[1,2,3],inputs,labels=labels,n_labels=10)
-        """
         #return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
         return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
     elif ('Generator' in name) and ('mid' in name) and NORMALIZATION_G:
@@ -261,7 +253,7 @@ def Generator_Imagenet(n_samples, labels, noise=None, is_training = None):
 
 
 def Discriminator_Imagenet(inputs, labels, update_collection):
-    spectralnorm_flag = True
+    spectralnorm_flag = False
     with tf.variable_scope("Discriminator"):
         #update_collection = tf.GraphKeys.UPDATE_OPS
         output = tf.reshape(inputs, [-1, 3, 128, 128])
@@ -277,8 +269,8 @@ def Discriminator_Imagenet(inputs, labels, update_collection):
                                       update_collection = update_collection)
         embed = tf.reshape(embed, [-1, 128, 1, 1])
         embed_tiled = tf.tile(embed, [1, 1, 16, 16], name = 'Discriminator.embed_tile')  # shape (3, 1)
-        output = tf.concat([output,embed_tiled] , axis=1, name = 'Discriminator.embed_concate')
-        output = ResidualBlock('Discriminator.6', 384, 512, 3, output, resample='down', labels=labels, \
+        #output = tf.concat([output,embed_tiled] , axis=1, name = 'Discriminator.embed_concate')
+        output = ResidualBlock('Discriminator.6', 256, 512, 3, output, resample='down', labels=labels, \
                                spectralnorm = spectralnorm_flag,update_collection = update_collection)
         output = ResidualBlock('Discriminator.7', 512, 1024, 3, output, resample='down', labels=labels, \
                                spectralnorm = spectralnorm_flag,update_collection = update_collection)
@@ -479,10 +471,9 @@ with tf.Session() as session:
                     line = line.strip()
                     img = cv2.imread(os.path.join(DATA_DIR,'Data','CLS-LOC','train',line.split(' ')[0]))
                     img = cv2.resize(img, (128, 128))
-                    img = img.astype(float)
-                    img = img/(255.0/2)
-                    for i in range(3):
-                        img[:, :, i] = img[:, :, i] - 1
+                    img = img.astype(np.float32)
+                    img = img/(255.99/2)
+                    img = img - 1.
                     img = img.transpose(2,0,1)
                     #print img.reshape((1,-1)).shape
                     all_images.append(img.reshape((1,-1)))
@@ -549,6 +540,7 @@ with tf.Session() as session:
         '''
         if iteration % 10 == 0:
             display_imgs('generator',iteration, _fake_data)
+            display_imgs('train_data', iteration, _data)
 
         # Calculate dev loss and generate samples every 100 iters
         if iteration % 100 == 99:
@@ -562,7 +554,7 @@ with tf.Session() as session:
                     img = cv2.imread(os.path.join(DATA_DIR, 'Data', 'CLS-LOC', 'val', line.split(' ')[0]))
                     img = cv2.resize(img, (128, 128))
                     img = img.astype(float)
-                    img = img/(255.0/2)
+                    img = img/(255.99/2)
                     for i in range(3):
                         img[:, :, i] = img[:, :, i] - 1
                     img = img.transpose(2,0,1)

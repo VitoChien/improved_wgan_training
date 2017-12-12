@@ -196,18 +196,21 @@ def Generator(n_samples, labels, noise=None, is_training = True):
 def Discriminator(inputs, labels ,update_collection, is_training = False):
     spectralnorm_flag = True
     output = tf.reshape(inputs, [-1, 3, 32, 32])
-    label_one_hot = tf.one_hot(labels, 10, name = 'Discriminator.onehot')
-    embed = lib.ops.linear.Linear('Discriminator.embed', 10, 128, label_one_hot, spectralnorm = spectralnorm_flag, \
-                                  update_collection = update_collection)
-    #embed = tf.reshape(embed, [-1, 128, 1, 1])
-    #embed_tiled = tf.tile(embed, [1, 1, 8, 8], name = 'Discriminator.embed_tile')  # shape (3, 1)
-    #output = tf.concat([output,embed_tiled] , axis=1, name = 'Discriminator.embed_concate')
 
     output = ResidualBlock('Discriminator.1', 3, DIM_D, 3, output, resample='down', labels=labels, spectralnorm = spectralnorm_flag, \
                                update_collection = update_collection)
     output = ResidualBlock('Discriminator.2', DIM_D, DIM_D, 3, output, resample='down', labels=labels, spectralnorm = spectralnorm_flag, \
                                update_collection = update_collection)
-    output = ResidualBlock('Discriminator.3', DIM_D, DIM_D, 3, output, resample=None, labels=labels, spectralnorm = spectralnorm_flag, \
+
+    label_one_hot = tf.one_hot(labels, 10, name = 'Discriminator.onehot')
+    #embed = lib.ops.linear.Linear('Discriminator.embed', 10, 128, label_one_hot, spectralnorm = spectralnorm_flag, \
+                                  #update_collection = update_collection)
+    #print output.shape
+    embed = tf.reshape(label_one_hot, [-1, 10, 1, 1])
+    embed_tiled = tf.tile(embed, [1, 1, 8, 8], name = 'Discriminator.embed_tile')  # shape (3, 1)
+    output = tf.concat([output,embed_tiled] , axis=1, name = 'Discriminator.embed_concate')
+
+    output = ResidualBlock('Discriminator.3', 138, DIM_D, 3, output, resample=None, labels=labels, spectralnorm = spectralnorm_flag, \
                                update_collection = update_collection)
     output = ResidualBlock('Discriminator.4', DIM_D, DIM_D, 3, output, resample=None, labels=labels, spectralnorm = spectralnorm_flag, \
                                update_collection = update_collection)
@@ -314,7 +317,10 @@ with tf.Session() as session:
             #discriminator_loss_real = tf.reduce_mean(tf.minimum(0., -1. + disc_real))
             #discriminator_loss_fake = tf.reduce_mean(tf.minimum(0., -1. - disc_fake))
 
-            disc_costs.append(tf.reduce_mean(-disc_real) + tf.reduce_mean(disc_fake))
+            #disc_costs.append(tf.reduce_mean(-disc_real) + tf.reduce_mean(disc_fake))
+            discriminator_loss_real = tf.reduce_mean(tf.maximum(0., 1. - disc_real))
+            discriminator_loss_fake = tf.reduce_mean(tf.maximum(0., 1. + disc_fake))
+            disc_costs.append(discriminator_loss_real + discriminator_loss_fake)
             """
             if CONDITIONAL and ACGAN:
                 disc_acgan_costs.append(tf.reduce_mean(
