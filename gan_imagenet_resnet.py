@@ -51,7 +51,7 @@ NORMALIZATION_D = False # Use batchnorm (or layernorm) in critic?
 #OUTPUT_DIM = 3072 # Number of pixels in CIFAR10 (32*32*3)
 OUTPUT_DIM = 49152 # Number of pixels in Imagenet (128*128*3)
 LR = 2e-4 # Initial learning rate
-DECAY = True # Whether to decay LR over learning
+DECAY = False # Whether to decay LR over learning
 N_CRITIC = 5 # Critic steps per generator steps
 INCEPTION_FREQUENCY = 2500 # How frequently to calculate Inception score
 
@@ -97,7 +97,6 @@ def Normalize(name, inputs,labels=None,is_training=None):
         else:
             return lib.ops.layernorm.Layernorm(name,[1,2,3],inputs,labels=labels,n_labels=10)
         """
-        #return lib.ops.layernorm.Layernorm(name,[1,2,3],inputs)
         #return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
         return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
     elif ('Generator' in name) and ('mid' in name) and NORMALIZATION_G:
@@ -112,25 +111,6 @@ def Normalize(name, inputs,labels=None,is_training=None):
     else:
         return inputs
 
-    """
-    if ('Discriminator' in name) and NORMALIZATION_D:
-        return lib.ops.layernorm.Layernorm(name,[1,2,3],inputs,labels=labels,n_labels=10)
-    elif ('Generator' in name) and NORMALIZATION_G:
-        if labels is not None:
-            return lib.ops.cond_batchnorm.Batchnorm(name,[0,2,3],inputs,labels=labels,n_labels=10)
-        else:
-            return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
-    else:
-        return inputs
-    """
-
-def SubpixelConv2D(*args, **kwargs):
-    kwargs['output_dim'] = 4*kwargs['output_dim']
-    output = lib.ops.conv2d.Conv2D(*args, **kwargs)
-    output = tf.transpose(output, [0,2,3,1])
-    output = tf.depth_to_space(output, 2)
-    output = tf.transpose(output, [0,3,1,2])
-    return output
 
 def ConvMeanPool(name, input_dim, output_dim, filter_size, inputs, he_init=True, biases=True, spectralnorm=False, update_collection = None):
     output = lib.ops.conv2d.Conv2D(name, input_dim, output_dim, filter_size, inputs, he_init=he_init, biases=biases,\
@@ -190,14 +170,14 @@ def ResidualBlock(name, input_dim, output_dim, filter_size, inputs, resample=Non
     output = inputs
     output = Normalize(name+'.N1', output, labels=labels, is_training = is_training)
     if 'Discriminator' in name:
-        output = lrelu(output)
+        output = relu(output)
     if 'Generator' in name:
         output = relu(output)
     output = conv_1(name+'.Conv1', filter_size=filter_size, inputs=output, he_init=he_init, biases=False, spectralnorm=spectralnorm, \
                                       update_collection=update_collection)
     output = Normalize(name+'.N2', output, labels=labels, is_training = is_training)
     if 'Discriminator' in name:
-        output = lrelu(output)
+        output = relu(output)
     if 'Generator' in name:
         output = relu(output)
     output = conv_2(name+'.Conv2', filter_size=filter_size, inputs=output, he_init=he_init, spectralnorm=spectralnorm, \
@@ -306,7 +286,7 @@ def Discriminator_Imagenet(inputs, labels, update_collection):
                                spectralnorm = spectralnorm_flag,update_collection = update_collection)
 
         output = tf.reduce_sum(output, axis=[2,3], name = 'Discriminator.reduce_sum')
-        output = lrelu(output)
+        output = relu(output)
         output_wgan = lib.ops.linear.Linear('Discriminator.Output', 1024, 1, output, spectralnorm = spectralnorm_flag,\
                                             update_collection = update_collection)
         output_wgan = tf.reshape(output_wgan, [-1])
@@ -358,8 +338,8 @@ with tf.Session() as session:
                 labels_splits[i],
                 labels_splits[len(DEVICES_A)+i]
             ], axis=0)
-            disc_fake, disc_fake_acgan = Discriminator_Imagenet(fake_data, fake_labels, update_collection="NO_OPS")
             disc_real, disc_real_acgan = Discriminator_Imagenet(real_data, real_labels, update_collection=None)
+            disc_fake, disc_fake_acgan = Discriminator_Imagenet(fake_data, fake_labels, update_collection="NO_OPS")
             '''
             real_and_fake_data = tf.concat([
                 all_real_data_splits[i], 
@@ -380,58 +360,16 @@ with tf.Session() as session:
             #disc_all, disc_all_acgan = Discriminator(real_and_fake_data, real_and_fake_labels)
             #disc_costs.append(tf.reduce_mean(disc_fake) - tf.reduce_mean(disc_real))
 
-            discriminator_loss_real = tf.reduce_mean(tf.minimum(0., -1. + disc_real))
-            discriminator_loss_fake = tf.reduce_mean(tf.minimum(0., -1. - disc_fake))
+            discriminator_loss_real = tf.reduce_mean(tf.maximum(0., 1. - disc_real))
+            discriminator_loss_fake = tf.reduce_mean(tf.maximum(0., 1. + disc_fake))
 
             disc_costs.append(discriminator_loss_real + discriminator_loss_fake)
-
-            '''
-            if CONDITIONAL and ACGAN:
-                disc_acgan_costs.append(tf.reduce_mean(
-                    tf.nn.sparse_softmax_cross_entropy_with_logits(logits=disc_all_acgan[:BATCH_SIZE/len(DEVICES_A)], labels=real_and_fake_labels[:BATCH_SIZE/len(DEVICES_A)])
-                ))
-                disc_acgan_accs.append(tf.reduce_mean(
-                    tf.cast(
-                        tf.equal(
-                            tf.to_int32(tf.argmax(disc_all_acgan[:BATCH_SIZE/len(DEVICES_A)], dimension=1)),
-                            real_and_fake_labels[:BATCH_SIZE/len(DEVICES_A)]
-                        ),
-                        tf.float32
-                    )
-                ))
-                disc_acgan_fake_accs.append(tf.reduce_mean(
-                    tf.cast(
-                        tf.equal(
-                            tf.to_int32(tf.argmax(disc_all_acgan[BATCH_SIZE/len(DEVICES_A):], dimension=1)),
-                            real_and_fake_labels[BATCH_SIZE/len(DEVICES_A):]
-                        ),
-                        tf.float32
-                    )
-                ))
-            '''
 
     for i, device in enumerate(DEVICES_B):
         with tf.device(device):
             real_data = tf.concat([all_real_data_splits[i], all_real_data_splits[len(DEVICES_A)+i]], axis=0)
             fake_data = tf.concat([fake_data_splits[i], fake_data_splits[len(DEVICES_A)+i]], axis=0)
 
-    '''
-            labels = tf.concat([
-                labels_splits[i], 
-                labels_splits[len(DEVICES_A)+i],
-            ], axis=0)
-            alpha = tf.random_uniform(
-                shape=[BATCH_SIZE/len(DEVICES_A),1], 
-                minval=0.,
-                maxval=1.
-            )
-            differences = fake_data - real_data
-            interpolates = real_data + (alpha*differences)
-            gradients = tf.gradients(Discriminator_Imagenet(interpolates, labels)[0], [interpolates])[0]
-            slopes = tf.sqrt(tf.reduce_sum(tf.square(gradients), reduction_indices=[1]))
-            gradient_penalty = 10*tf.reduce_mean((slopes-1.)**2)
-            disc_costs.append(gradient_penalty)
-    '''
 
     disc_wgan = tf.add_n(disc_costs) / len(DEVICES_A)
     if CONDITIONAL and ACGAN:

@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="70fce5a2-6480-463b-a9e1-98eb866874f6" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gan_cifar_resnet.py" afterPath="$PROJECT_DIR$/gan_cifar_resnet.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gan_imagenet_resnet.py" afterPath="$PROJECT_DIR$/gan_imagenet_resnet.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tflib/ops/batchnorm.py" afterPath="$PROJECT_DIR$/tflib/ops/batchnorm.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tflib/ops/deconv2d.py" afterPath="$PROJECT_DIR$/tflib/ops/deconv2d.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tflib/ops/conv2d.py" afterPath="$PROJECT_DIR$/tflib/ops/conv2d.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -19,18 +19,8 @@
       <file leaf-file-name="gan_imagenet_resnet.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gan_imagenet_resnet.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="440">
-              <caret line="308" column="18" lean-forward="false" selection-start-line="308" selection-start-column="18" selection-end-line="308" selection-end-column="18" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="cond_batchnorm.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tflib/ops/cond_batchnorm.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="200">
-              <caret line="13" column="50" lean-forward="false" selection-start-line="13" selection-start-column="50" selection-end-line="13" selection-end-column="50" />
+            <state relative-caret-position="67">
+              <caret line="371" column="0" lean-forward="true" selection-start-line="371" selection-start-column="0" selection-end-line="371" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -39,8 +29,28 @@
       <file leaf-file-name="gan_cifar_resnet.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gan_cifar_resnet.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="360">
-              <caret line="158" column="51" lean-forward="false" selection-start-line="158" selection-start-column="51" selection-end-line="158" selection-end-column="51" />
+            <state relative-caret-position="290">
+              <caret line="455" column="32" lean-forward="false" selection-start-line="455" selection-start-column="24" selection-end-line="455" selection-end-column="32" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="gan_cifar_resnet_org.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gan_cifar_resnet_org.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="2042">
+              <caret line="243" column="18" lean-forward="true" selection-start-line="243" selection-start-column="18" selection-end-line="243" selection-end-column="18" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="cond_batchnorm.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tflib/ops/cond_batchnorm.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="240">
+              <caret line="15" column="33" lean-forward="false" selection-start-line="15" selection-start-column="33" selection-end-line="15" selection-end-column="33" />
               <folding />
             </state>
           </provider>
@@ -50,7 +60,7 @@
         <entry file="file://$PROJECT_DIR$/gan_64x64.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="432">
-              <caret line="213" column="31" lean-forward="true" selection-start-line="213" selection-start-column="31" selection-end-line="213" selection-end-column="31" />
+              <caret line="213" column="31" lean-forward="false" selection-start-line="213" selection-start-column="31" selection-end-line="213" selection-end-column="31" />
               <folding />
             </state>
           </provider>
@@ -68,48 +78,12 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="small_imagenet.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tflib/small_imagenet.py">
+      <file leaf-file-name="sn.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tflib/ops/sn.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="260">
-              <caret line="13" column="98" lean-forward="false" selection-start-line="13" selection-start-column="98" selection-end-line="13" selection-end-column="98" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="plot.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tflib/plot.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="320">
-              <caret line="18" column="14" lean-forward="false" selection-start-line="18" selection-start-column="14" selection-end-line="18" selection-end-column="14" />
+            <state relative-caret-position="80">
+              <caret line="11" column="64" lean-forward="false" selection-start-line="11" selection-start-column="64" selection-end-line="11" selection-end-column="64" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="save_images.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tflib/save_images.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="837">
-              <caret line="42" column="49" lean-forward="false" selection-start-line="42" selection-start-column="49" selection-end-line="42" selection-end-column="49" />
-              <folding>
-                <element signature="e#73#91#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="conv2d.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tflib/ops/conv2d.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="290">
-              <caret line="19" column="4" lean-forward="false" selection-start-line="19" selection-start-column="4" selection-end-line="19" selection-end-column="4" />
-              <folding>
-                <element signature="e#0#19#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -118,36 +92,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>DIM_G</find>
-      <find>DIM_D</find>
-      <find>NORMALIZATION_G</find>
-      <find>NORMALIZATION_D</find>
-      <find>conditional_instance_normed</find>
-      <find>Discriminator_Imagenet</find>
-      <find>batchnorm</find>
-      <find>is_training</find>
-      <find>generator_im</find>
-      <find>1000</find>
-      <find>1</find>
-      <find>8</find>
-      <find>, update_collection = None, spectralnorm = False</find>
-      <find>conv</find>
-      <find>conv2</find>
-      <find>conv2d</find>
-      <find>3</find>
       <find>32</find>
       <find>Imagenet</find>
       <find>INCEPTION_FREQUENCY</find>
-      <find>spectralnorm</find>
       <find>Good</find>
-      <find>he_init</find>
       <find>Discriminator_Imagenet(</find>
       <find>Generator_Imagenet(</find>
       <find>4</find>
       <find>16</find>
       <find>BATCH_SIZE</find>
-      <find>_new</find>
       <find>Resnet</find>
+      <find>_new</find>
+      <find>Adversarial</find>
+      <find>conditional_instance_normed</find>
+      <find>Normalize</find>
+      <find>he_init</find>
+      <find>spectral_normed_weight</find>
+      <find>True, is_training = True</find>
+      <find>, is_training = True</find>
+      <find>gen_costs</find>
+      <find>is_training</find>
+      <find>update</find>
+      <find>fake_data</find>
+      <find>update_collection</find>
+      <find>sum</find>
+      <find>labels</find>
+      <find>Discriminator</find>
+      <find>spectralnorm</find>
+      <find>Generator</find>
+      <find>N_CRITIC</find>
+      <find>NO_OPS</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -167,11 +141,12 @@
         <option value="$PROJECT_DIR$/tflib/imagenet.py" />
         <option value="$PROJECT_DIR$/tflib/ops/sn.py" />
         <option value="$PROJECT_DIR$/tflib/ops/linear.py" />
-        <option value="$PROJECT_DIR$/tflib/ops/conv2d.py" />
         <option value="$PROJECT_DIR$/tflib/save_images.py" />
         <option value="$PROJECT_DIR$/tflib/ops/batchnorm.py" />
         <option value="$PROJECT_DIR$/tflib/ops/deconv2d.py" />
         <option value="$PROJECT_DIR$/gan_64x64.py" />
+        <option value="$PROJECT_DIR$/tflib/ops/conv2d.py" />
+        <option value="$PROJECT_DIR$/gan_cifar_resnet_org.py" />
         <option value="$PROJECT_DIR$/gan_cifar_resnet.py" />
         <option value="$PROJECT_DIR$/gan_imagenet_resnet.py" />
       </list>
@@ -437,14 +412,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///usr/local/lib/python2.7/dist-packages/tensorflow/python/training/adam.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="310">
-          <caret line="38" column="6" lean-forward="false" selection-start-line="38" selection-start-column="6" selection-end-line="38" selection-end-column="6" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tflib/ops/layernorm.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
@@ -452,14 +419,6 @@
           <folding>
             <element signature="e#0#19#0" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tflib/ops/sn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="751">
-          <caret line="48" column="0" lean-forward="false" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -476,7 +435,7 @@
         <state relative-caret-position="837">
           <caret line="42" column="49" lean-forward="false" selection-start-line="42" selection-start-column="49" selection-end-line="42" selection-end-column="49" />
           <folding>
-            <element signature="e#73#91#0" expanded="true" />
+            <element signature="e#73#91#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -545,34 +504,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tflib/ops/conv2d.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="290">
-          <caret line="19" column="4" lean-forward="false" selection-start-line="19" selection-start-column="4" selection-end-line="19" selection-end-column="4" />
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tflib/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="140">
-          <caret line="7" column="3" lean-forward="true" selection-start-line="7" selection-start-column="3" selection-end-line="7" selection-end-column="3" />
-          <folding>
-            <element signature="e#0#18#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gan_cifar_resnet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="158" column="51" lean-forward="false" selection-start-line="158" selection-start-column="51" selection-end-line="158" selection-end-column="51" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/local/lib/python2.7/dist-packages/tensorflow/python/ops/array_ops.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="430">
@@ -581,26 +512,108 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tflib/ops/cond_batchnorm.py">
+    <entry file="file://$PROJECT_DIR$/gan_64x64.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="200">
-          <caret line="13" column="50" lean-forward="false" selection-start-line="13" selection-start-column="50" selection-end-line="13" selection-end-column="50" />
+        <state relative-caret-position="432">
+          <caret line="213" column="31" lean-forward="false" selection-start-line="213" selection-start-column="31" selection-end-line="213" selection-end-column="31" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gan_64x64.py">
+    <entry file="file://$PROJECT_DIR$/tflib/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="432">
-          <caret line="213" column="31" lean-forward="true" selection-start-line="213" selection-start-column="31" selection-end-line="213" selection-end-column="31" />
+        <state relative-caret-position="120">
+          <caret line="9" column="4" lean-forward="false" selection-start-line="9" selection-start-column="4" selection-end-line="9" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/lib/python2.7/dist-packages/tensorflow/python/ops/embedding_ops.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-590">
+          <caret line="262" column="4" lean-forward="false" selection-start-line="262" selection-start-column="4" selection-end-line="262" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/typeshed/stdlib/2/__builtin__.pyi">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="113" column="19" lean-forward="true" selection-start-line="113" selection-start-column="19" selection-end-line="113" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tflib/ops/conv2d.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="18" column="0" lean-forward="false" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/lib/python2.7/dist-packages/tensorflow/python/ops/gen_math_ops.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="310">
+          <caret line="2504" column="4" lean-forward="false" selection-start-line="2504" selection-start-column="4" selection-end-line="2504" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/lib/python2.7/dist-packages/tensorflow/python/training/adam.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3010">
+          <caret line="31" column="19" lean-forward="false" selection-start-line="31" selection-start-column="6" selection-end-line="31" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/lib/python2.7/dist-packages/tensorflow/python/ops/nn_impl.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="390">
+          <caret line="751" column="10" lean-forward="true" selection-start-line="751" selection-start-column="10" selection-end-line="751" selection-end-column="10" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tflib/ops/cond_batchnorm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="15" column="33" lean-forward="false" selection-start-line="15" selection-start-column="33" selection-end-line="15" selection-end-column="33" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gan_cifar_resnet_org.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2042">
+          <caret line="243" column="18" lean-forward="true" selection-start-line="243" selection-start-column="18" selection-end-line="243" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gan_cifar_resnet.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="290">
+          <caret line="455" column="32" lean-forward="false" selection-start-line="455" selection-start-column="24" selection-end-line="455" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tflib/ops/sn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="80">
+          <caret line="11" column="64" lean-forward="false" selection-start-line="11" selection-start-column="64" selection-end-line="11" selection-end-column="64" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gan_imagenet_resnet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="440">
-          <caret line="308" column="18" lean-forward="false" selection-start-line="308" selection-start-column="18" selection-end-line="308" selection-end-column="18" />
+        <state relative-caret-position="67">
+          <caret line="371" column="0" lean-forward="true" selection-start-line="371" selection-start-column="0" selection-end-line="371" selection-end-column="0" />
           <folding />
         </state>
       </provider>
