@@ -33,7 +33,7 @@ N_GPUS = 2
 if N_GPUS not in [1,2]:
     raise Exception('Only 1 or 2 GPUs supported!')
 
-BATCH_SIZE = 64 # Critic batch size
+BATCH_SIZE = 2 # Critic batch size
 GEN_BS_MULTIPLE = 2 # Generator batch size, as a multiple of BATCH_SIZE
 ITERS = 100000 # How many iterations to train for
 DIM_G = 128 # Generator dimensionality
@@ -42,11 +42,11 @@ NORMALIZATION_G = True # Use batchnorm in generator?
 NORMALIZATION_D = False # Use batchnorm (or layernorm) in critic?
 OUTPUT_DIM = 3072 # Number of pixels in CIFAR10 (32*32*3)
 LR = 2e-4 # Initial learning rate
-DECAY = True # Whether to decay LR over learning
+DECAY = False # Whether to decay LR over learning
 N_CRITIC = 5 # Critic steps per generator steps
 INCEPTION_FREQUENCY = 1000 # How frequently to calculate Inception score
 
-CONDITIONAL = True # Whether to train a conditional or unconditional model
+CONDITIONAL = False # Whether to train a conditional or unconditional model
 ACGAN = False # If CONDITIONAL, whether to use ACGAN or "vanilla" conditioning
 ACGAN_SCALE = 1. # How to scale the critic's ACGAN loss relative to WGAN loss
 ACGAN_SCALE_G = 0.1 # How to scale generator's ACGAN loss relative to WGAN loss
@@ -201,7 +201,7 @@ def Discriminator(inputs, labels ,update_collection, is_training = False):
                                update_collection = update_collection)
     output = ResidualBlock('Discriminator.2', DIM_D, DIM_D, 3, output, resample='down', labels=labels, spectralnorm = spectralnorm_flag, \
                                update_collection = update_collection)
-
+    #"""
     label_one_hot = tf.one_hot(labels, 10, name = 'Discriminator.onehot')
     #embed = lib.ops.linear.Linear('Discriminator.embed', 10, 128, label_one_hot, spectralnorm = spectralnorm_flag, \
                                   #update_collection = update_collection)
@@ -209,8 +209,8 @@ def Discriminator(inputs, labels ,update_collection, is_training = False):
     embed = tf.reshape(label_one_hot, [-1, 10, 1, 1])
     embed_tiled = tf.tile(embed, [1, 1, 8, 8], name = 'Discriminator.embed_tile')  # shape (3, 1)
     output = tf.concat([output,embed_tiled] , axis=1, name = 'Discriminator.embed_concate')
-
-    output = ResidualBlock('Discriminator.3', 138, DIM_D, 3, output, resample=None, labels=labels, spectralnorm = spectralnorm_flag, \
+    #"""
+    output = ResidualBlock('Discriminator.3', DIM_D + 10, DIM_D, 3, output, resample=None, labels=labels, spectralnorm = spectralnorm_flag, \
                                update_collection = update_collection)
     output = ResidualBlock('Discriminator.4', DIM_D, DIM_D, 3, output, resample=None, labels=labels, spectralnorm = spectralnorm_flag, \
                                update_collection = update_collection)
@@ -464,7 +464,7 @@ with tf.Session() as session:
             if CONDITIONAL and ACGAN:
                 _disc_cost, _disc_wgan, _disc_acgan, _disc_acgan_acc, _disc_acgan_fake_acc, _ = session.run([disc_cost, disc_wgan, disc_acgan, disc_acgan_acc, disc_acgan_fake_acc, disc_train_op], feed_dict={all_real_data_int: _data, all_real_labels:_labels, _iteration:iteration})
             else:
-                _disc_cost, _ = session.run([disc_cost, disc_train_op], feed_dict={all_real_data_int: _data, all_real_labels:_labels, _iteration:iteration})
+                _disc_cost, _fake_data,_ = session.run([disc_cost, fake_data, disc_train_op], feed_dict={all_real_data_int: _data, all_real_labels:_labels, _iteration:iteration})
 
         lib.plot.plot('cost', _disc_cost)
         if CONDITIONAL and ACGAN:
@@ -487,8 +487,17 @@ with tf.Session() as session:
                 dev_disc_costs.append(_dev_disc_cost)
             lib.plot.plot('dev_cost', np.mean(dev_disc_costs))
 
+
+        def display_imgs(prefix, frame, true_dist):
+            # print true_dist
+            img = ((true_dist + 1.) * (255. / 2)).astype('int32')
+            img = true_dist.astype('int32')
+            print img
+            lib.save_images.save_images(img.reshape((-1, 3, 32, 32)), 'cifar_mid', prefix + '_samples_{}.png'.format(frame))
+
         if iteration % 10 == 0:
             generate_image(iteration, _data)
+            display_imgs('train_data', iteration, _data)
 
         if (iteration < 500) or (iteration % 1000 == 999):
             lib.plot.flush()
