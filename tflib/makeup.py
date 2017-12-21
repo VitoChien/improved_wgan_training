@@ -39,3 +39,8 @@ def load(batch_size, data_dir):
         Imagenet_generator(['train'], batch_size, data_dir),
         Imagenet_generator(['val'], batch_size, data_dir)
     )
+
+def load_test(batch_size, data_dir):
+    return (
+        Imagenet_generator(['val'], batch_size, data_dir)
+    )
