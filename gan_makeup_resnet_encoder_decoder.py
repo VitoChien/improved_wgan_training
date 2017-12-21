@@ -263,11 +263,13 @@ with tf.Session() as session:
 
     real_data_int = tf.placeholder(tf.int32, shape=[BATCH_SIZE, OUTPUT_DIM])
     real_labels = tf.placeholder(tf.int32, shape=[BATCH_SIZE])
+    n_samples = BATCH_SIZE
+    fake_labels = tf.cast(tf.random_uniform([n_samples])*10, tf.int32)
 
     real_data = tf.reshape(2*((tf.cast(real_data_int, tf.float32)/256.)-.5), [BATCH_SIZE, OUTPUT_DIM])
     real_data += tf.random_uniform(shape=[BATCH_SIZE,OUTPUT_DIM],minval=0.,maxval=1./128) # dequantize
 
-    fake_data = Generator(real_data, real_labels, is_training = True)
+    fake_data = Generator(real_data, fake_labels, is_training = True)
 
     #Get loss for D
     disc_costs = []
@@ -275,7 +277,7 @@ with tf.Session() as session:
     disc_acgan_accs = []
     disc_acgan_fake_accs = []
     disc_real, disc_real_acgan = Discriminator(real_data, real_labels, update_collection=None)
-    disc_fake, disc_fake_acgan = Discriminator(fake_data, real_labels, update_collection="NO_OPS")
+    disc_fake, disc_fake_acgan = Discriminator(fake_data, fake_labels, update_collection="NO_OPS")
     discriminator_loss_real = tf.reduce_mean(tf.maximum(0., 1. - disc_real))
     discriminator_loss_fake = tf.reduce_mean(tf.maximum(0., 1. + disc_fake))
     disc_costs.append(discriminator_loss_real + discriminator_loss_fake)
@@ -298,7 +300,7 @@ with tf.Session() as session:
         tf.cast(
             tf.equal(
                 tf.to_int32(tf.argmax(disc_fake_acgan, dimension=1)),
-                real_labels
+                fake_labels
             ),
             tf.float32
         )
@@ -321,8 +323,6 @@ with tf.Session() as session:
     gen_acgan_costs = []
     rec_costs = []
 
-    n_samples = BATCH_SIZE
-    fake_labels = tf.cast(tf.random_uniform([n_samples])*10, tf.int32)
     fake_img = Generator(real_data,fake_labels)
     disc_fake, disc_fake_acgan = Discriminator(fake_img, fake_labels, update_collection="NO_OPS")
     rec_img = Generator(fake_img, real_labels)
