@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="70fce5a2-6480-463b-a9e1-98eb866874f6" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gan_makeup_resnet_encoder_decoder.py" afterPath="$PROJECT_DIR$/gan_makeup_resnet_encoder_decoder.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -27,8 +28,8 @@
       <file leaf-file-name="gan_makeup_resnet_encoder_decoder.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gan_makeup_resnet_encoder_decoder.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="347" column="15" lean-forward="false" selection-start-line="347" selection-start-column="15" selection-end-line="347" selection-end-column="15" />
+            <state relative-caret-position="460">
+              <caret line="59" column="15" lean-forward="false" selection-start-line="59" selection-start-column="15" selection-end-line="59" selection-end-column="15" />
               <folding />
             </state>
           </provider>
@@ -118,8 +119,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>dev_gen</find>
-      <find>Placeholder</find>
       <find>all_real_labels</find>
       <find>print</find>
       <find>ACGAN_SCALE</find>
@@ -148,6 +147,8 @@
       <find>Discriminator</find>
       <find>real_labels</find>
       <find>convert_to_tensor</find>
+      <find>10</find>
+      <find>NUM_OF_CLASS</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -155,6 +156,7 @@
       <replace>Discriminator_Imagenet_new(</replace>
       <replace>Generator_Imagenet_new(</replace>
       <replace>Discriminator_Imagenet(</replace>
+      <replace>NUM_OF_CLASS</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -705,8 +707,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gan_makeup_resnet_encoder_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="347" column="15" lean-forward="false" selection-start-line="347" selection-start-column="15" selection-end-line="347" selection-end-column="15" />
+        <state relative-caret-position="460">
+          <caret line="59" column="15" lean-forward="false" selection-start-line="59" selection-start-column="15" selection-end-line="59" selection-end-column="15" />
           <folding />
         </state>
       </provider>

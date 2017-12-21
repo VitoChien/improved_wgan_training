@@ -39,6 +39,7 @@ if N_GPUS not in [1,2]:
     raise Exception('Only 1 or 2 GPUs supported!')
 
 BATCH_SIZE = 16 # Critic batch size
+NUM_OF_CLASS = 11
 GEN_BS_MULTIPLE = 2 # Generator batch size, as a multiple of BATCH_SIZE
 ITERS = 100000 # How many iterations to train for
 DIM_G = 128 # Generator dimensionality
@@ -54,9 +55,9 @@ INCEPTION_FREQUENCY = 100000 # How frequently to calculate Inception score
 
 CONDITIONAL = True # Whether to train a conditional or unconditional model
 ACGAN = True # If CONDITIONAL, whether to use ACGAN or "vanilla" conditioning
-ACGAN_SCALE_D = 0.00000001 # How to scale the critic's ACGAN loss relative to WGAN loss
+ACGAN_SCALE_D = 0.0001 # How to scale the critic's ACGAN loss relative to WGAN loss
 ACGAN_SCALE_G = 0.0001 # How to scale generator's ACGAN loss relative to WGAN loss
-REC_SCALE = 0.00001
+REC_SCALE = 0.1
 
 if CONDITIONAL and (not ACGAN) and (not NORMALIZATION_D):
     print "WARNING! Conditional model without normalization in D might be effectively unconditional!"
@@ -94,7 +95,7 @@ def Normalize(name, inputs,labels=None, is_training = False):
     elif ('Generator' in name) and NORMALIZATION_G:
         if labels is not None:
             #print("##################################################")
-            return lib.ops.cond_batchnorm.Batchnorm(name,[0,2,3],inputs,labels=labels,n_labels=10)
+            return lib.ops.cond_batchnorm.Batchnorm(name,[0,2,3],inputs,labels=labels,n_labels=NUM_OF_CLASS)
         else:
             return lib.ops.batchnorm.Batchnorm(name,[0,2,3],inputs,fused=True)
     else:
@@ -231,13 +232,13 @@ def Discriminator(inputs, labels ,update_collection, is_training = False):
                                update_collection = update_collection)
         output = ResidualBlock('Discriminator.4', 128, 256, 3, output, resample='down', labels=labels, spectralnorm = spectralnorm_flag,\
                                update_collection = update_collection)
-        label_one_hot = tf.one_hot(labels, 10, name = 'Discriminator.onehot')
+        label_one_hot = tf.one_hot(labels, NUM_OF_CLASS, name = 'Discriminator.onehot')
         #embed = lib.ops.linear.Linear('Discriminator.embed', 10, 128, label_one_hot, spectralnorm = spectralnorm_flag, \
                                      #update_collection = update_collection)
-        embed = tf.reshape(label_one_hot, [-1, 10, 1, 1])
+        embed = tf.reshape(label_one_hot, [-1, NUM_OF_CLASS, 1, 1])
         embed_tiled = tf.tile(embed, [1, 1, 16, 16], name = 'Discriminator.embed_tile')  # shape (3, 1)
         output = tf.concat([output,embed_tiled] , axis=1, name = 'Discriminator.embed_concate')
-        output = ResidualBlock('Discriminator.6', 256 + 10, 512, 3, output, resample='down', labels=labels, \
+        output = ResidualBlock('Discriminator.6', 256 + NUM_OF_CLASS, 512, 3, output, resample='down', labels=labels, \
                                spectralnorm = spectralnorm_flag,update_collection = update_collection)
         output = ResidualBlock('Discriminator.7', 512, 1024, 3, output, resample='down', labels=labels, \
                                spectralnorm = spectralnorm_flag,update_collection = update_collection)
@@ -249,7 +250,8 @@ def Discriminator(inputs, labels ,update_collection, is_training = False):
         output_wgan = lib.ops.linear.Linear('Discriminator.Output', 1024, 1, output, spectralnorm = spectralnorm_flag,\
                                             update_collection = update_collection)
         output_wgan = tf.reshape(output_wgan, [-1])
-        output_acgan = lib.ops.linear.Linear('Discriminator.ACGANOutput', 1024, 10, output)
+        output_acgan = lib.ops.linear.Linear('Discriminator.ACGANOutput', 1024, NUM_OF_CLASS, output, spectralnorm = spectralnorm_flag,\
+                                            update_collection = update_collection)
         return output_wgan, output_acgan
 
 
@@ -264,7 +266,7 @@ with tf.Session() as session:
     real_data_int = tf.placeholder(tf.int32, shape=[BATCH_SIZE, OUTPUT_DIM])
     real_labels = tf.placeholder(tf.int32, shape=[BATCH_SIZE])
     n_samples = BATCH_SIZE
-    fake_labels = tf.cast(tf.random_uniform([n_samples])*10, tf.int32)
+    fake_labels = tf.cast(tf.random_uniform([n_samples])*NUM_OF_CLASS, tf.int32)
 
     real_data = tf.reshape(2*((tf.cast(real_data_int, tf.float32)/256.)-.5), [BATCH_SIZE, OUTPUT_DIM])
     real_data += tf.random_uniform(shape=[BATCH_SIZE,OUTPUT_DIM],minval=0.,maxval=1./128) # dequantize
@@ -281,8 +283,8 @@ with tf.Session() as session:
     discriminator_loss_real = tf.reduce_mean(tf.maximum(0., 1. - disc_real))
     discriminator_loss_fake = tf.reduce_mean(tf.maximum(0., 1. + disc_fake))
     disc_costs.append(discriminator_loss_real + discriminator_loss_fake)
-    #disc_real_acgan = tf.Print(disc_real_acgan,[disc_real_acgan],summarize=BATCH_SIZE*10)
-    #real_labels = tf.Print(real_labels,[real_labels],summarize=BATCH_SIZE*10)
+
+    #x_print = tf.Print(real_labels,[real_labels], summarize= 16)
     disc_acgan_costs.append(tf.reduce_mean(
         tf.nn.sparse_softmax_cross_entropy_with_logits(logits=disc_real_acgan, labels=real_labels)
     ))
@@ -338,7 +340,7 @@ with tf.Session() as session:
     gen_acgan = tf.add_n(gen_acgan_costs)
     rec_cost = tf.add_n(rec_costs)
     gen_cost = ge_cost
-    #gen_cost += ACGAN_SCALE_G * gen_acgan
+    gen_cost += ACGAN_SCALE_G * gen_acgan
     gen_cost += REC_SCALE * rec_cost
 
     gen_opt = tf.train.AdamOptimizer(learning_rate=LR*decay, beta1=0., beta2=0.9)
@@ -382,9 +384,9 @@ with tf.Session() as session:
                     img = cv2.imread(os.path.join(DATA_DIR,line.split(' ')[0]))
                     img = cv2.resize(img, (128, 128))
                     img = img.transpose((2,0,1))
-                    for i in range(10):
+                    for i in range(NUM_OF_CLASS):
                         all_images.append(img.reshape((1,-1)))
-                    for i in range(10):
+                    for i in range(NUM_OF_CLASS):
                         all_labels.append(int(line.split(' ')[1]))
                 all_labels = np.array(all_labels)
                 all_labels = all_labels[np.newaxis]
@@ -394,16 +396,16 @@ with tf.Session() as session:
 
     # Function for generating samples
     frame_i = [0]
-    fixed_labels = tf.constant(np.array([0,1,2,3,4,5,6,7,8,9]*10,dtype='int32'))
+    fixed_labels = tf.constant(np.array([0,1,2,3,4,5,6,7,8,9,10]*10,dtype='int32'))
     gen_dev = inf_dev_gen()
     img_test, label_tets = gen_dev.next()
     #print(img_test.shape)
-    img_test = tf.reshape(2 * ((tf.cast(img_test, tf.float32) / 256.) - .5), [100, OUTPUT_DIM])
+    img_test = tf.reshape(2 * ((tf.cast(img_test, tf.float32) / 256.) - .5), [110, OUTPUT_DIM])
     fixed_noise_samples = Generator(img_test, fixed_labels)
     def generate_image(frame, true_dist):
         samples = session.run(fixed_noise_samples)
         samples = ((samples+1.)*(255./2)).astype('int32')
-        lib.save_images.save_images(samples.reshape((100, 3, 128, 128)), 'makeup_mid', 'samples_{}.png'.format(frame))
+        lib.save_images.save_images(samples.reshape((110, 3, 128, 128)), 'makeup_mid', 'samples_{}.png'.format(frame))
 
     # Function for calculating inception score
     """
